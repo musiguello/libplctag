@@ -20,13 +20,13 @@
 
 #include <signal.h>
 #include <stddef.h>
-#include "../../lib/libplctag.h"
+#include "lib/libplctag.h"
 #include "tests/regression/logix.h"
 #include "tests/regression/util.h"
 
 #define TIMEOUT (1000)
 
-typedef int (*plc_emulator)(pid_t parent_pid);
+typedef void (*plc_emulator)(int sock);
 
 typedef struct {
     const char *test_name;
@@ -48,6 +48,45 @@ static test_entry tests[] = {
     { .test_name = NULL, .tag_string = NULL, .result = PLCTAG_ERR_UNSUPPORTED }
 };
 
+static int run_test(test_entry *test);
+
+
+
+int main(int argc, char **argv)
+{
+    int test_count = 0;
+    int test_count_pass = 0;
+    int test_count_fail = 0;
+
+    (void)argc;
+    (void)argv;
+
+    /* set up child signal handler first. */
+    setup_sigcont_handler();
+
+    /* run the tests. */
+
+    test_entry *test = tests;
+    while(test && test->test_name) {
+        test_count++;
+
+        if(run_test(test) == PLCTAG_STATUS_OK) {
+            test_count_pass++;
+        } else {
+            test_count_fail++;
+        }
+
+        test++;
+    }
+
+    info("Total tests: %d", test_count);
+    info("\tPassing: %d", test_count_pass);
+    info("\tFailing: %d", test_count_fail);
+
+    return 0;
+}
+
+
 
 
 int run_test(test_entry *test)
@@ -67,8 +106,40 @@ int run_test(test_entry *test)
             /* wat? this is fatal as it means something is really wrong. */
             error("Unable to fork emulator process!");
         } else if (emulator_pid == 0) {
-            /* emulator process. */
-            test->emulator(parent_pid);
+            int sock = 0;
+
+            /* boilerplate for all child emulator processes. */
+
+            /* first set the SIGINT flag before we set up the signal handler. */
+            sigint_received = 0;
+            setup_sigint_handler();
+
+            /* set up socket. */
+            rc = init_socket(&sock);
+            if(rc != PLCTAG_STATUS_OK) {
+                info("Unable to open socket!");
+
+                /* let the parent process know that we are ready */
+                kill(parent_pid, SIGCONT);
+
+                /* run until done. */
+                while(!sigint_received) {
+                    util_sleep_ms(10);
+                }
+
+                exit(1);
+            }
+
+            /* let the parent process know that we are ready */
+            kill(parent_pid, SIGCONT);
+
+            /* run the main loop for the emulator. */
+            while(!sigint_received) {
+                test->emulator(sock);
+            }
+
+            /* close the socket now that we are done. */
+            close(sock);
         } else {
             /*
              * parent test process.
@@ -124,40 +195,5 @@ int run_test(test_entry *test)
     }
 
     return rc;
-}
-
-
-int main(int argc, char **argv)
-{
-    int test_count = 0;
-    int test_count_pass = 0;
-    int test_count_fail = 0;
-
-    (void)argc;
-    (void)argv;
-
-    /* set up child signal handler first. */
-    setup_sigcont_handler();
-
-    /* run the tests. */
-
-    test_entry *test = tests;
-    while(test && test->test_name) {
-        test_count++;
-
-        if(run_test(test) == PLCTAG_STATUS_OK) {
-            test_count_pass++;
-        } else {
-            test_count_fail++;
-        }
-
-        test++;
-    }
-
-    info("Total tests: %d", test_count);
-    info("\tPassing: %d", test_count_pass);
-    info("\tFailing: %d", test_count_fail);
-
-    return 0;
 }
 

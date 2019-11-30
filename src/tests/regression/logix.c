@@ -24,21 +24,15 @@
 #include "tests/regression/logix.h"
 #include "lib/libplctag.h"
 
+static const char *register_session_request_pattern_string = "65 00 04 00 00 00 00 00 00 00 "
+                                                             "00 00 00 00 00 00 00 00 00 00 "
+                                                             "00 00 00 00 01 00 00 00";
+static compiled_pattern_s *register_session_request_pattern = NULL;
 
-int logix_emulator(pid_t parent_pid)
+/* this is called repeatedly. */
+void logix_emulator(int sock)
 {
-    /* first set the SIGINT flag before we set up the signal handler. */
-    sigint_received = 0;
-
-    setup_sigint_handler();
-
-    /* let the parent process know that we are ready */
-    kill(parent_pid, SIGCONT);
 
     /* run until done. */
-    while(!sigint_received) {
-        util_sleep_ms(10);
-    }
-
-    return PLCTAG_STATUS_OK;
+    util_sleep_ms(10);
 }
