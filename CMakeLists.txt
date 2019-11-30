@@ -194,6 +194,22 @@ endif()
 
 # add the examples and tests
 if (UNIX)
+    # regression tests
+    set ( regression_test_FILES "${test_SRC_PATH}/regression/test.c"
+                                "${test_SRC_PATH}/regression/logix.c"
+                                "${test_SRC_PATH}/regression/logix.h"
+                                "${test_SRC_PATH}/regression/util.c"
+                                "${test_SRC_PATH}/regression/util.h" )
+
+
+    foreach ( file ${regression_test_FILES} )
+        set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${BASE_FLAGS} -std=c11")
+    endforeach ( file )
+
+    add_executable ( regression ${regression_test_FILES} )
+    target_link_libraries ( regression plctag pthread )
+
+
     # Logix simulator
     set ( lgx_sim_FILES "${test_SRC_PATH}/lgx_sim/log.h"
                         "${test_SRC_PATH}/lgx_sim/main.c"
