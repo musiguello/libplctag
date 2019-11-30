@@ -292,21 +292,19 @@ if (UNIX)
     target_link_libraries(test_hashtable plctag pthread)
 
     # regression tests
-#    set ( regression_test_FILES "${test_SRC_PATH}/regression/test.c"
-#                                "${test_SRC_PATH}/regression/logix.c"
-#                                "${test_SRC_PATH}/regression/logix.h"
-#                                "${test_SRC_PATH}/regression/packet.c"
-#                                "${test_SRC_PATH}/regression/packet.h"
-#                                "${test_SRC_PATH}/regression/util.c"
-#                                "${test_SRC_PATH}/regression/util.h" )
-#
-#
-#    foreach ( file ${regression_test_FILES} )
-#        set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${BASE_FLAGS} -std=c11")
-#    endforeach ( file )
-#
-#    add_executable ( ab_regression ${regression_test_FILES} )
-#    target_link_libraries ( ab_regression plctag_dyn pthread )
+    set ( regression_test_FILES "${test_SRC_PATH}/regression/test.c"
+                                "${test_SRC_PATH}/regression/logix.c"
+                                "${test_SRC_PATH}/regression/logix.h"
+                                "${test_SRC_PATH}/regression/util.c"
+                                "${test_SRC_PATH}/regression/util.h" )
+
+
+    foreach ( file ${regression_test_FILES} )
+        set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${BASE_FLAGS} -std=c11")
+    endforeach ( file )
+
+    add_executable ( regression ${regression_test_FILES} )
+    target_link_libraries ( regression plctag pthread )
 
     # example programs
     set ( example_PROGRAMS async
