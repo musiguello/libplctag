@@ -24,6 +24,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <wait.h>
+#include <stdlib.h>
 
 extern int util_sleep_ms(int ms);
 extern int64_t util_time_ms(void);
@@ -36,3 +37,17 @@ extern void setup_sigcont_handler(void);
 
 extern volatile sig_atomic_t sigint_received;
 extern void setup_sigint_handler(void);
+
+/* socket handling */
+extern int init_socket(int *sock);
+
+/* matching */
+
+typedef struct {
+    int packet_size;
+    uint8_t *match_bytes;
+    uint8_t *match_type;
+} compiled_pattern_s;
+
+extern int compile_pattern(const char *pattern, compiled_pattern_s **compiled_pattern);
+extern int match_packet(int sock, compiled_pattern_s *pattern, uint8_t *copy_buf, int copy_buf_size);
