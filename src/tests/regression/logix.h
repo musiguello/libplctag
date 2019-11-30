@@ -22,5 +22,5 @@
 
 #include <signal.h>
 
-extern int logix_emulator(pid_t parent_pid);
+extern void logix_emulator(int sock);
 
