@@ -147,7 +147,6 @@ void setup_sigint_handler(void)
     sigaction(SIGINT, &SIGINT_act, NULL);
 }
 
-<<<<<<< HEAD
 
 
 /* socket handling */
@@ -365,5 +364,3 @@ int compile_pattern(const char *pattern, compiled_pattern_s **compiled_pattern)
 
     return byte_index;
 }
-=======
->>>>>>> Adding test harness.
