@@ -26,7 +26,8 @@
 
 static const char *register_session_request_string = "65 00 04 00 00 00 00 00 00 00 "
                                                      "00 00 00 00 00 00 00 00 00 00 "
-                                                     "00 00 00 00 01 00 00 00";
+                                                     "00 00 00 00 01 00 00 00 ";
+
 static const char *register_session_response_string = "65 00 04 00 <1 <1 <1 <1 00 00 "
                                                       "00 00 00 00 00 00 00 00 00 00 "
                                                       "00 00 00 00 01 00 00 00 ";
@@ -41,6 +42,8 @@ static const char *forward_open_ex_request_string = "6f 00 44 00 =1 =1 =1 =1 00 
                                                     "0f 00 a2 0f 00 42 40 42 0f 00 "
                                                     "a2 0f 00 42 a3 03 01 04 20 02 "
                                                     "24 01 ";
+/*
+
 PC -> PLC
 6f 00 44 00 =1 =1 =1 =1 00 00
 00 00 >2 >2 >2 >2 >2 >2 >2 >2
@@ -108,6 +111,7 @@ PLC->PC
 ce 00 00 00 <5 <5 3d f3 45 43
 50 21 00 00
 
+ */
 
 static const char *forward_open_response_string = "6f 00 2e 00 ?? ?? ?? ?? 00 00 "
                                                   "00 00 ?? ?? ?? ?? ?? ?? ?? ?? "

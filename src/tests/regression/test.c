@@ -20,7 +20,14 @@
 
 #include <signal.h>
 #include <stddef.h>
-#include "../../lib/libplctag.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <errno.h>
+#include "lib/libplctag.h"
 #include "tests/regression/logix.h"
 #include "tests/regression/util.h"
 
@@ -105,7 +112,10 @@ int run_test(test_entry *test)
             /* wat? this is fatal as it means something is really wrong. */
             error("Unable to fork emulator process!");
         } else if (emulator_pid == 0) {
-            int sock = 0;
+            int client_sock = 0;
+            int listen_sock = 0;
+            socklen_t size = sizeof(struct sockaddr_in);
+            struct sockaddr_in client_addr;
 
             /* boilerplate for all child emulator processes. */
 
@@ -114,7 +124,7 @@ int run_test(test_entry *test)
             setup_sigint_handler();
 
             /* set up socket. */
-            rc = init_socket(&sock);
+            rc = init_socket(&listen_sock);
             if(rc != PLCTAG_STATUS_OK) {
                 info("Unable to open socket!");
 
@@ -132,13 +142,40 @@ int run_test(test_entry *test)
             /* let the parent process know that we are ready */
             kill(parent_pid, SIGCONT);
 
-            /* run the main loop for the emulator. */
-            while(!sigint_received) {
-                test->emulator(sock);
+            /*
+             * Accept a client connection.  We only do one at a time.
+             * Get the client information.
+             */
+            memset(&client_addr, 0, sizeof client_addr);
+            client_sock = accept(listen_sock, (struct sockaddr*)&client_addr, &size);
+            if (client_sock == -1) {
+                info("accept() failed! errno=%d\n", errno);
+
+                /* close the listening */
+                if(listen_sock > 0) {
+                    close(listen_sock);
+                }
+
+                /* let the parent process know that we are ready */
+                kill(parent_pid, SIGCONT);
+
+                /* run until done. */
+                while(!sigint_received) {
+                    util_sleep_ms(10);
+                }
+
+                exit(1);
             }
 
-            /* close the socket now that we are done. */
-            close(sock);
+            /* run the main loop for the emulator. */
+            while(!sigint_received) {
+                test->emulator(client_sock);
+                util_sleep_ms(1);
+            }
+
+            /* close the sockets now that we are done. */
+            close(client_sock);
+            close(listen_sock);
         } else {
             /*
              * parent test process.
