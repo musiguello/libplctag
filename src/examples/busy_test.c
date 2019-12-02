@@ -31,7 +31,7 @@
 #include "utils.h"
 
 
-#define TAG_ATTRIBS "protocol=ab_eip&gateway=10.206.1.40&path=1,4&cpu=LGX&elem_type=DINT&elem_count=%d&name=TestBigArray[%d]&debug=4"
+#define TAG_ATTRIBS "protocol=ab_eip&gateway=10.206.1.40&path=1,4&cpu=LGX&elem_type=DINT&elem_count=%d&name=TestBigArray[%d]"
 #define NUM_TAGS  (5)
 #define NUM_ELEMS (10)
 #define DATA_TIMEOUT (1000)
