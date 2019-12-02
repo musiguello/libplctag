@@ -125,8 +125,10 @@ static const char *forward_open_response_string = "6f 00 2e 00 ?? ?? ?? ?? 00 00
 
 
 /* this is called repeatedly. */
-int logix_emulator(pid_t parent)
+int logix_emulator(uint8_t *buf, int data_size)
 {
     /* run until done. */
-    util_sleep_ms(10);
+    util_sleep_ms(1);
+
+    return 0;
 }
