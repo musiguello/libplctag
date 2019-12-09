@@ -20,51 +20,91 @@
 
 #pragma once
 
+#include <stddef.h>
+#include "lib/libplctag.h"
+
 typedef struct {
     int len;
     uint8_t *data;
 } slice_s;
 
-static slice_s make_slice(uint8_t *data, int len) { return (slice_s){.len = len, .data = data}; }
+inline static slice_s slice_make(uint8_t *data, int len) { return (slice_s){.len = len, .data = data}; }
+inline static slice_s slice_make_err(int err) { return slice_make(NULL, err); }
+inline static int slice_in_bounds(slice_s s, int index) { if(index >= 0 || index < s.len) { return PLCTAG_STATUS_OK; } else { return PLCTAG_ERR_OUT_OF_BOUNDS; } }
+inline static int slice_at(slice_s s, int index) { if(slice_in_bounds(s, index)) { return PLCTAG_ERR_OUT_OF_BOUNDS; } else { return s.data[index]; } }
+inline static int slice_at_put(slice_s s, int index, uint8_t val) { if(slice_in_bounds(s, index)) { return PLCTAG_ERR_OUT_OF_BOUNDS; } else { s.data[index] = val; return PLCTAG_STATUS_OK; } }
+inline static int slice_err(slice_s s) { if(s.data == NULL) { return s.len; } else { return PLCTAG_STATUS_OK; } }
+
+extern void slice_dump(slice_s s);
 
 /*
- * match the pattern against the bytes in the buffer.  The pattern
- * may have bytes that are skipped.   If the entire pattern matches,
- * then the length of the pattern, in bytes, is returned.
+ * packet routines, like printf/scanf
  *
- * If the match fails because there is insufficient data in the buffer,
- * then PLCTAG_ERR_TOO_SHORT is returned.
+ * Simple format:
  *
- * If any match byte does not match the data in the buffer, then PLCTAG_ERR_NOT_FOUND is
- * returned.
+ * The template string is composed of elements separated by spaces.  Each element
+ * can be either an immediate value or be copied in/out of a variable in the
+ * varargs section.   Spaces and tabs are considered to be whitespace and are
+ * ignored.
  *
- * The patterns are strings of a form such as this:
+ * Element types:
  *
- * 6f 00 44 00 =1 =1 =1 =1 00 00
- * 00 00 >2 >2 >2 >2 >2 >2 >2 >2
- * 00 00 00 00 00 00 00 00 01 00
- * 02 00 00 00 00 00 b2 00 34 00
- * 5b 02 20 06 24 01 0a 05 00 00
- * 00 00 >4 >4 >4 >4 >5 >5 3d f3
- * 45 43 50 21 01 00 00 00 40 42
- * 0f 00 a2 0f 00 42 40 42 0f 00
- * a2 0f 00 42 a3 03 01 04 20 02
- * 24 01
+ * =XX - if packing, this pushes the byte described by the hex digits into the output buffer slice.
+ *       When unpacking, this matches a byte value in the input buffer slice.
  *
- * Elements that are two hex digits are used to match the corresponding byte in the buffer.
- * Elements that are not hex digits are skipped during a match.
+ * Input/Output:
+ *
+ * %U1 - When unpacking, copy a 1-byte unsigned integer into the respective argument passed
+ *       in the varargs part.  When packing, copy a 1-byte unsigned integer from the respective
+ *       varargs argument into the passed buffer slice.
+ *
+ * %L2 - When unpacking, copy a little endian 2-byte unsigned integer into the respective argument passed
+ *       in the varargs part.  When packing, copy a little endian 2-byte unsigned integer from the respective
+ *       varargs argument into the passed buffer slice.
+ *
+ * %B2 - As for L2, but with big endian 2-byte unsigned integer.
+ *
+ * %L4 - As for L2, but with little endian 4-byte unsigned integer.
+ *
+ * %B4 - As for L2, but with big endian 4-byte unsigned integer.
+ *
+ * %L8 - As for L2, but with little endian 8-byte unsigned integer.
+ *
+ * %B8 - As for L2, but with big endian 8-byte unsigned integer.
+ *
+ * Return Values:
+ *
+ * The pack_slice routine returns a slice covering the entire new part that was packed in the output
+ * slice.   When there is an error to report, an error slice is returned.  Errors:
+ *    PLCTAG_ERR_OUT_OF_BOUNDS - returned when the output data would be longer than the output buffer slice.
+ *
+ * The unpack_slice() function returns a slice covering all the data in the input buffer that was processed.
+ * If the slice was unable to process all arguments, it will return an error slice.
+ *    PLCTAG_ERR_TOO_SHORT - returned when there is insufficient data in the input buffer to process the
+ *                           entire template.
+ *
+ * Both routines will return PLCTAG_ERR_UNSUPPORTED if they find a template element that does not match one
+ * of the elements above.
+ *
+ * Example Patterns:
+ *
+ * A pack pattern template that puts out a 28-byte slice with a single 4-byte little-endian inserted at the
+ * fifth through eighth bytes.
+ *
+ * =65 =00 =04 =00 %L4             =00 =00
+ * =00 =00 =00 =00 =00 =00 =00 =00 =00 =00
+ * =00 =00 =00 =00 =01 =00 =00 =00
+ *
+ * An unpack pattern template that matches a template with three fields to pull out.
+ *
+ * =70 =00 %L2     %L4             =00 =00
+ * =00 =00 =00 =00 =00 =00 =00 =00 =00 =00
+ * =00 =00 =00 =00 =00 =00 =00 =00 =01 =00
+ * =02 =00 =a1 =00 =04 =00 %L4
+ * =b1 =00 %L2
  *
  */
-extern int match_pattern(slice_s buf, const char *pattern);
 
-/*
- * Take a pattern in the form above for match_pattern() and turn it into binary byte values
- * in the passed slice.
- *
- * If there is insufficient space in the slice, PLCTAG_ERR_TOO_LONG is returned.
- *
- * If all goes well, the return values is the number of bytes copied to the slice.
- *
- * Pattern elements that are not hex digits are converted to 0xFF bytes in the target slice.
- */
-extern int copy_pattern(slice_s buf, const char *pattern);
+extern slice_s pack_slice(slice_s outbuf, const char *tmpl, ...);
+extern slice_s unpack_slice(slice_s inbuf, const char *tmpl, ...);
+
