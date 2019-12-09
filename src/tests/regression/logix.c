@@ -22,7 +22,10 @@
 #include <signal.h>
 #include "tests/regression/util.h"
 #include "tests/regression/logix.h"
+#include "tests/regression/packet.h"
 #include "lib/libplctag.h"
+
+/*
 
 static const char *register_session_request_string = "65 00 04 00 00 00 00 00 00 00 "
                                                      "00 00 00 00 00 00 00 00 00 00 "
@@ -42,7 +45,7 @@ static const char *forward_open_ex_request_string = "6f 00 44 00 =1 =1 =1 =1 00 
                                                     "0f 00 a2 0f 00 42 40 42 0f 00 "
                                                     "a2 0f 00 42 a3 03 01 04 20 02 "
                                                     "24 01 ";
-/*
+
 
 PC -> PLC
 6f 00 44 00 =1 =1 =1 =1 00 00
@@ -56,6 +59,20 @@ PC -> PLC
 a2 0f 00 42 a3 03 01 04 20 02
 24 01
 
+6f 00 44 00 42 00 00 00 00 00
+00 00 41 fa e0 1a 00 00 00 00
+2019-11-08 20:31:44.694 thread(3) tag(0) DETAIL send_eip_request:1690 00020 00 00 00 00 00 00 00 00 01 00
+2019-11-08 20:31:44.694 thread(3) tag(0) DETAIL send_eip_request:1690 00030 02 00 00 00 00 00 b2 00 34 00
+2019-11-08 20:31:44.694 thread(3) tag(0) DETAIL send_eip_request:1690 00040 5b 02 20 06 24 01 0a 05 00 00
+2019-11-08 20:31:44.694 thread(3) tag(0) DETAIL send_eip_request:1690 00050 00 00 c2 98 b1 65 10 2f 3d f3
+2019-11-08 20:31:44.694 thread(3) tag(0) DETAIL send_eip_request:1690 00060 45 43 50 21 01 00 00 00 40 42
+2019-11-08 20:31:44.694 thread(3) tag(0) DETAIL send_eip_request:1690 00070 0f 00 a2 0f 00 42 40 42 0f 00
+2019-11-08 20:31:44.694 thread(3) tag(0) DETAIL send_eip_request:1690 00080 a2 0f 00 42 a3 03 01 05 20 02
+2019-11-08 20:31:44.694 thread(3) tag(0) DETAIL send_eip_request:1690 00090 24 01
+
+ *
+ *
+ *
 ?1 = session handle
 ?2 = session id
 ?4 = PC connection ID
@@ -111,7 +128,7 @@ PLC->PC
 ce 00 00 00 <5 <5 3d f3 45 43
 50 21 00 00
 
- */
+
 
 static const char *forward_open_response_string = "6f 00 2e 00 ?? ?? ?? ?? 00 00 "
                                                   "00 00 ?? ?? ?? ?? ?? ?? ?? ?? "
@@ -121,14 +138,115 @@ static const char *forward_open_response_string = "6f 00 2e 00 ?? ?? ?? ?? 00 00
                                                   "2a 2a b0 df 3d f3 45 43 50 21 "
                                                   "40 42 0f 00 40 42 0f 00 00 00 ";
 
+*/
 
+typedef enum {
+    SESSION_OPEN,
+    FORWARD_OPEN,
+
+    FORWARD_CLOSE,
+    SESSION_CLOSE
+} server_state_t;
 
 
 /* this is called repeatedly. */
-int logix_emulator(uint8_t *buf, int data_size)
+slice_s logix_emulator(slice_s inbuf, slice_s outbuf)
 {
-    /* run until done. */
-    util_sleep_ms(1);
+    static uint32_t session_id = 0;
+    static uint32_t plc_connection_id = 0;
+    static uint32_t pc_connection_id = 0;
+    static uint16_t pc_connection_seq = 0;
+    static server_state_t state = SESSION_OPEN;
+    slice_s result = slice_make_err(PLCTAG_STATUS_OK);
+    uint32_t pc_session_id = 0;
+    uint64_t pc_session_key = 0;
 
-    return 0;
+
+    switch(state) {
+        case SESSION_OPEN:
+            /* match a Session Open Request */
+            result = unpack_slice(inbuf,
+                                  "=65 =00 =04 =00 =00 =00 =00 =00 =00 =00 "
+                                  "=00 =00 =00 =00 =00 =00 =00 =00 =00 =00 "
+                                  "=00 =00 =00 =00 =01 =00 =00 =00 "
+            );
+
+            if(!slice_err(result)) {
+                /* we got a match!  Prepare a response packet. */
+                session_id=0x42;
+
+                result = pack_slice(outbuf,
+                                    "=65 =00 =04 =00 %L4             =00 =00 "
+                                    "=00 =00 =00 =00 =00 =00 =00 =00 =00 =00 "
+                                    "=00 =00 =00 =00 =01 =00 =00 =00 ",
+                                    session_id
+                );
+
+                if(slice_err(result)) {
+                    info("Error creating output slice %s!", plc_tag_decode_error(slice_err(result)));
+                } else {
+                    state = FORWARD_OPEN;
+                }
+            } else {
+                info("SESSION_OPEN packet not matched.");
+            }
+
+            break;
+
+        case FORWARD_OPEN:
+            result = unpack_slice(inbuf,
+                                 "=6f =00 =44 =00 %L4             =00 =00 "
+                                 "=00 =00 %L8                             "
+                                 "=00 =00 =00 =00 =00 =00 =00 =00 =01 =00 "
+                                 "=02 =00 =00 =00 =00 =00 =b2 =00 =34 =00 "
+                                 "=5b =02 =20 =06 =24 =01 =0a =05 =00 =00 "
+                                 "=00 =00 %L4             %L2     =3d =f3 "
+                                 "=45 =43 =50 =21 =01 =00 =00 =00 =40 =42 "
+                                 "=0f =00 =a2 =0f =00 =42 =40 =42 =0f =00 "
+                                 "=a2 =0f =00 =42 =a3 =03 =01 =05 =20 =02 "
+                                 "=24 =01 ",
+                                 &pc_session_id,
+                                 &pc_session_key,
+                                 &pc_connection_id,
+                                 &pc_connection_seq
+            );
+
+            if(!slice_err(result)) {
+                /* we got a match!  Prepare a FO response packet. */
+                plc_connection_id = 0x1066;
+
+                /* check some values */
+                if(session_id != pc_session_id) {
+                    info("Session ID from PC (%x) does not match session ID (%x)!", pc_session_id, session_id);
+                }
+
+                result = pack_slice(outbuf,
+                                    "=6f =00 =2e =00 %L4             =00 =00 "
+                                    "=00 =00 %L8                             "
+                                    "=00 =00 =00 =00 =00 =00 =00 =00 =00 =00 "
+                                    "=02 =00 =00 =00 =00 =00 =b2 =00 =1e =00 "
+                                    "=db =00 =00 =00 %L4             %L4     "
+                                    "        %L2     =3d =f3 =45 =43 =50 =21 "
+                                    "=40 =42 =0f =00 =40 =42 =0f =00 =00 =00 ",
+                                    session_id,
+                                    pc_session_key,
+                                    plc_connection_id,
+                                    pc_connection_id,
+                                    pc_connection_seq
+                );
+
+                if(slice_err(result)) {
+                    info("Error creating FO response output slice %s!", plc_tag_decode_error(slice_err(result)));
+                } else {
+                    state = FORWARD_CLOSE;
+                }
+            } else {
+                info("FORWARD_OPEN packet not matched.");
+            }
+
+            break;
+
+    }
+
+    return result;
 }

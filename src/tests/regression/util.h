@@ -41,13 +41,3 @@ extern void setup_sigint_handler(void);
 /* socket handling */
 extern int init_socket(int *sock);
 
-/* matching */
-
-typedef struct {
-    int packet_size;
-    uint8_t *match_bytes;
-    uint8_t *match_type;
-} compiled_pattern_s;
-
-extern int compile_pattern(const char *pattern, compiled_pattern_s **compiled_pattern);
-extern int match_packet(int sock, compiled_pattern_s *pattern, uint8_t *copy_buf, int copy_buf_size);

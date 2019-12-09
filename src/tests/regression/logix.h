@@ -21,6 +21,8 @@
 #pragma once
 
 #include <signal.h>
+#include "tests/regression/packet.h"
 
-extern int logix_emulator(uint8_t *buf, int data_size);
+
+extern slice_s logix_emulator(slice_s inbuf, slice_s outbuf);
 
