@@ -323,14 +323,14 @@ typedef enum { START, ARRAY, DOT, NAME } encode_state_t;
  * turns it into an IOI path/string.
  */
 
-int cip_encode_tag_name(ab_tag_p tag,const char *name)
+int cip_encode_tag_name(ab_tag_p tag, const char *name)
 {
     uint8_t *data = tag->encoded_name;
     const char *p = name;
     uint8_t *word_count = NULL;
     uint8_t *dp = NULL;
-    uint8_t *name_len;
-    encode_state_t state;
+    uint8_t *name_len = NULL;
+    encode_state_t state = START;
     int first_num = 1;
 
     /* reserve room for word count for IOI string. */
