@@ -41,3 +41,18 @@ extern void setup_sigint_handler(void);
 /* socket handling */
 extern int init_socket(int *sock);
 
+
+/* protocol helpers */
+
+typedef struct {
+    uint32_t session_id;
+    uint64_t session_key;
+    uint32_t connection_id;
+    uint16_t connection_seq;
+} session_side_s;
+
+typedef struct {
+    session_side_s plc;
+    session_side_s pc;
+} session_s;
+

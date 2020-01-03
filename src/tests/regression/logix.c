@@ -143,9 +143,8 @@ static const char *forward_open_response_string = "6f 00 2e 00 ?? ?? ?? ?? 00 00
 typedef enum {
     SESSION_OPEN,
     FORWARD_OPEN,
-
-    FORWARD_CLOSE,
-    SESSION_CLOSE
+    READ_TAG,
+    FORWARD_CLOSE
 } server_state_t;
 
 
@@ -214,6 +213,7 @@ slice_s logix_emulator(slice_s inbuf, slice_s outbuf)
             if(!slice_err(result)) {
                 /* we got a match!  Prepare a FO response packet. */
                 plc_connection_id = 0x1066;
+                session_id = pc_session_id;
 
                 /* check some values */
                 if(session_id != pc_session_id) {
@@ -246,6 +246,50 @@ slice_s logix_emulator(slice_s inbuf, slice_s outbuf)
 
             break;
 
+        case FORWARD_CLOSE:
+            result = unpack_slice(inbuf,
+                                 "=6f =00 =28 =00 %L4             =00 =00 "
+                                 "=00 =00 %L8                             "
+                                 "=00 =00 =00 =00 =00 =00 =00 =00 =01 =00 "
+                                 "=02 =00 =00 =00 =00 =00 =b2 =00 =18 =00 "
+                                 "=4e =02 =20 =06 =24 =01 =0a =05 %L2     "
+                                 "=3d =f3 =45 =43 =50 =21 =03 =54 =01 =04 "
+                                 "=20 =02 =24 =01 ",
+                                 &pc_session_id,
+                                 &pc_session_key,
+                                 &pc_connection_seq
+            );
+
+            if(!slice_err(result)) {
+                /* we got a match!  Prepare a FC response packet. */
+
+                if(pc_session_id == session_id) {
+                    result = pack_slice(outbuf,
+                                        "=6f =00 =1e =00 %L4             =00 =00 "
+                                        "=00 =00 %L8                             "
+                                        "=00 =00 =00 =00 =00 =00 =00 =00 =00 =00 "
+                                        "=02 =00 =00 =00 =00 =00 =b2 =00 =0e =00 "
+                                        "=ce =00 =00 =00 %L2     =3d =f3 =45 =43 "
+                                        "=50 =21 =00 =00 ",
+                                        session_id,
+                                        pc_session_key,
+                                        pc_connection_seq
+                    );
+                }
+
+                if(slice_err(result)) {
+                    info("Error creating FC response output slice %s!", plc_tag_decode_error(slice_err(result)));
+                }
+            } else {
+                info("FORWARD_CLOSE packet not matched.");
+            }
+
+            break;
+
+        default:
+            info("Unknown state %d!", state);
+            result = slice_make_err(PLCTAG_ERR_UNSUPPORTED);
+            break;
     }
 
     return result;
