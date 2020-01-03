@@ -86,36 +86,36 @@ if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
         set(BASE_DEBUG_FLAGS "${BASE_DEBUG_FLAGS} -D__USE_POSIX=1 -D_POSIX_C_SOURCE=200809L")
     endif()
 
-	set(C11_SUPPORT true)
-	set(C99_FLAGS "-std=c99" )
+    set(C11_SUPPORT true)
+    set(C99_FLAGS "-std=c99" )
 elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU")
     # using GCC
 
-	SET(C11_CHECK "")
+    SET(C11_CHECK "")
 
-	# get GCC version
-	if(${CMAKE_VERSION} VERSION_GREATER 2.8.9)
-		MESSAGE(STATUS "CMake is newer, using a sane way to get the GCC version..")
-		SET(COMPILER_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
-	else()
-		# old CMake.   Do this the hard way.
-		MESSAGE(STATUS "CMake is old, using the old way to get the GCC version.")
-		EXECUTE_PROCESS(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE COMPILER_VERSION)
-		MESSAGE(STATUS "COMPILER_VERSION=" ${COMPILER_VERSION})
-	endif()
+    # get GCC version
+    if(${CMAKE_VERSION} VERSION_GREATER 2.8.9)
+        MESSAGE(STATUS "CMake is newer, using a sane way to get the GCC version..")
+        SET(COMPILER_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
+    else()
+        # old CMake.   Do this the hard way.
+        MESSAGE(STATUS "CMake is old, using the old way to get the GCC version.")
+        EXECUTE_PROCESS(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE COMPILER_VERSION)
+        MESSAGE(STATUS "COMPILER_VERSION=" ${COMPILER_VERSION})
+    endif()
 
-	if(${COMPILER_VERSION} VERSION_GREATER 5.1 OR ${COMPILER_VERSION} VERSION_GREATER 5.1)
-		# The compiler has the C99-c11-compat check.
-		MESSAGE(STATUS "Compiler supports C99/C11 compatibility check." )
-		SET(C11_CHECK "-Wc99-c11-compat" )
-		SET(C11_SUPPORT True)
-	else()
-		MESSAGE(STATUS "Compiler does not support C99/C11 compatibility check." )
-	endif()
+    if(${COMPILER_VERSION} VERSION_GREATER 5.1 OR ${COMPILER_VERSION} VERSION_GREATER 5.1)
+        # The compiler has the C99-c11-compat check.
+        MESSAGE(STATUS "Compiler supports C99/C11 compatibility check." )
+        SET(C11_CHECK "-Wc99-c11-compat" )
+        SET(C11_SUPPORT True)
+    else()
+        MESSAGE(STATUS "Compiler does not support C99/C11 compatibility check." )
+    endif()
 
     set(BASE_RELEASE_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Wextra ${C11_CHECK} -Wconversion -fms-extensions -fno-strict-aliasing -D__USE_POSIX=1 -D_POSIX_C_SOURCE=200809L")
     set(BASE_DEBUG_FLAGS "${CMAKE_C_FLAGS}  -g -Wall -pedantic -Wextra ${C11_CHECK} -Wconversion -fms-extensions -fno-strict-aliasing -D__USE_POSIX=1 -D_POSIX_C_SOURCE=200809L")
-	set(C99_FLAGS "-std=c99" )
+    set(C99_FLAGS "-std=c99" )
 elseif (CMAKE_C_COMPILER_ID STREQUAL "Intel")
     # using Intel C/C++
     MESSAGE("Intel C compiler not supported!")
@@ -260,38 +260,38 @@ endif()
 
 # add the examples and tests
 if (UNIX)
-	if(C11_SUPPORT)
-		# Logix simulator
-		set ( lgx_sim_FILES "${test_SRC_PATH}/lgx_sim/log.h"
-							"${test_SRC_PATH}/lgx_sim/main.c"
-							"${test_SRC_PATH}/lgx_sim/packet.h"
-							"${test_SRC_PATH}/lgx_sim/main.c"
-							"${test_SRC_PATH}/lgx_sim/session.c"
-							"${test_SRC_PATH}/lgx_sim/session.h"
-							"${test_SRC_PATH}/lgx_sim/tags.c"
-							"${test_SRC_PATH}/lgx_sim/tags.h" )
+    if(C11_SUPPORT)
+        # Logix simulator
+        set ( lgx_sim_FILES "${test_SRC_PATH}/lgx_sim/log.h"
+                            "${test_SRC_PATH}/lgx_sim/main.c"
+                            "${test_SRC_PATH}/lgx_sim/packet.h"
+                            "${test_SRC_PATH}/lgx_sim/main.c"
+                            "${test_SRC_PATH}/lgx_sim/session.c"
+                            "${test_SRC_PATH}/lgx_sim/session.h"
+                            "${test_SRC_PATH}/lgx_sim/tags.c"
+                            "${test_SRC_PATH}/lgx_sim/tags.h" )
 
-		foreach ( file ${lgx_sim_FILES} )
-			set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${BASE_FLAGS} -std=c11")
-		endforeach ( file )
+        foreach ( file ${lgx_sim_FILES} )
+            set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${BASE_FLAGS} -std=c11")
+        endforeach ( file )
 
-		add_executable ( lgx_sim ${lgx_sim_FILES} )
-		target_link_libraries ( lgx_sim pthread )
-	endif()
+        add_executable ( lgx_sim ${lgx_sim_FILES} )
+        target_link_libraries ( lgx_sim pthread )
+    endif()
 
-	# hashtable test
-	set(test_hashtable_FILES "${test_SRC_PATH}/hashtable/test_hashtable.c"
-							 "${util_SRC_PATH}/hashtable.h"
-							 "${util_SRC_PATH}/debug.h" )
+    # hashtable test
+    set(test_hashtable_FILES "${test_SRC_PATH}/hashtable/test_hashtable.c"
+                             "${util_SRC_PATH}/hashtable.h"
+                             "${util_SRC_PATH}/debug.h" )
 
-	foreach ( file ${test_hashtable_FILES} )
-		set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${C99_FLAGS} ${BASE_FLAGS}")
-	endforeach ( file )
+    foreach ( file ${test_hashtable_FILES} )
+        set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${C99_FLAGS} ${BASE_FLAGS}")
+    endforeach ( file )
 
     add_executable(test_hashtable ${test_hashtable_FILES} )
     target_link_libraries(test_hashtable plctag pthread)
 
-# regression tests
+    # regression tests
 #    set ( regression_test_FILES "${test_SRC_PATH}/regression/test.c"
 #                                "${test_SRC_PATH}/regression/logix.c"
 #                                "${test_SRC_PATH}/regression/logix.h"
@@ -308,7 +308,7 @@ if (UNIX)
 #    add_executable ( ab_regression ${regression_test_FILES} )
 #    target_link_libraries ( ab_regression plctag_dyn pthread )
 
-	# example programs
+    # example programs
     set ( example_PROGRAMS async
                            async_stress
                            barcode_test
@@ -363,6 +363,8 @@ target_link_libraries (simple_cpp ${example_LIBRARIES} )
 foreach ( example ${example_PROGRAMS} )
     set_source_files_properties("${example_SRC_PATH}/${example}.c" PROPERTIES COMPILE_FLAGS "${C99_FLAGS} ${BASE_C_FLAGS}" )
     add_executable( ${example} "${example_SRC_PATH}/${example}.c" "${example_SRC_PATH}/${example_PROG_UTIL}" "${example_SRC_PATH}/utils.h" )
+
+    set_target_properties(${example} PROPERTIES LINK_FLAGS ${STATIC_LINK_FLAGS} )
     target_link_libraries(${example} ${example_LIBRARIES} )
 endforeach()
 
