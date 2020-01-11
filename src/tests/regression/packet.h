@@ -22,20 +22,9 @@
 
 #include <stddef.h>
 #include "lib/libplctag.h"
+#include <tests/regression/slice.h>
+#include <tests/regression/socket.h>
 
-typedef struct {
-    int len;
-    uint8_t *data;
-} slice_s;
-
-inline static slice_s slice_make(uint8_t *data, int len) { return (slice_s){.len = len, .data = data}; }
-inline static slice_s slice_make_err(int err) { return slice_make(NULL, err); }
-inline static int slice_in_bounds(slice_s s, int index) { if(index >= 0 || index < s.len) { return PLCTAG_STATUS_OK; } else { return PLCTAG_ERR_OUT_OF_BOUNDS; } }
-inline static int slice_at(slice_s s, int index) { if(slice_in_bounds(s, index)) { return PLCTAG_ERR_OUT_OF_BOUNDS; } else { return s.data[index]; } }
-inline static int slice_at_put(slice_s s, int index, uint8_t val) { if(slice_in_bounds(s, index)) { return PLCTAG_ERR_OUT_OF_BOUNDS; } else { s.data[index] = val; return PLCTAG_STATUS_OK; } }
-inline static int slice_err(slice_s s) { if(s.data == NULL) { return s.len; } else { return PLCTAG_STATUS_OK; } }
-
-extern void slice_dump(slice_s s);
 
 /*
  * packet routines, like printf/scanf
@@ -108,3 +97,5 @@ extern void slice_dump(slice_s s);
 extern slice_s pack_slice(slice_s outbuf, const char *tmpl, ...);
 extern slice_s unpack_slice(slice_s inbuf, const char *tmpl, ...);
 
+/* useful for debugging. */
+extern void slice_dump(slice_s s);

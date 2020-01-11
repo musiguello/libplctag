@@ -20,8 +20,8 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#include "tests/regression/packet.h"
-#include "tests/regression/util.h"
+#include <tests/regression/packet.h>
+#include <tests/regression/util.h>
 
 
 /*
@@ -131,7 +131,7 @@ slice_s pack_slice(slice_s outbuf, const char *tmpl, ...)
      * newly created, packed data.
      */
 
-    return slice_make(outbuf.data, out_index);
+    return slice_trunc(outbuf, out_index);
 }
 
 

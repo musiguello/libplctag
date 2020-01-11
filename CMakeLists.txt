@@ -292,13 +292,15 @@ if (UNIX)
     target_link_libraries(test_hashtable plctag pthread)
 
     # regression tests
-    set ( regression_test_FILES "${test_SRC_PATH}/regression/test.c"
-                                "${test_SRC_PATH}/regression/logix.c"
-                                "${test_SRC_PATH}/regression/logix.h"
+    set ( regression_test_FILES "${test_SRC_PATH}/regression/ab.c"
                                 "${test_SRC_PATH}/regression/packet.c"
                                 "${test_SRC_PATH}/regression/packet.h"
+                                "${test_SRC_PATH}/regression/slice.h"
+                                "${test_SRC_PATH}/regression/socket.c"
+                                "${test_SRC_PATH}/regression/socket.h"
                                 "${test_SRC_PATH}/regression/util.c"
-                                "${test_SRC_PATH}/regression/util.h" )
+                                "${test_SRC_PATH}/regression/util.h"
+        )
 
 
     foreach ( file ${regression_test_FILES} )
@@ -306,7 +308,7 @@ if (UNIX)
     endforeach ( file )
 
     add_executable ( ab_regression ${regression_test_FILES} )
-    target_link_libraries ( ab_regression plctag pthread )
+    target_link_libraries ( ab_regression plctag_dyn pthread )
 
     # example programs
     set ( example_PROGRAMS async

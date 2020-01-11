@@ -32,27 +32,27 @@ extern void error(const char *templ, ...);
 extern void info(const char *templ, ...);
 
 /* signal helpers. */
-extern volatile sig_atomic_t sigcont_received;
-extern void setup_sigcont_handler(void);
-
-extern volatile sig_atomic_t sigint_received;
-extern void setup_sigint_handler(void);
-
-/* socket handling */
-extern int init_socket(int *sock);
-
-
-/* protocol helpers */
-
-typedef struct {
-    uint32_t session_id;
-    uint64_t session_key;
-    uint32_t connection_id;
-    uint16_t connection_seq;
-} session_side_s;
-
-typedef struct {
-    session_side_s plc;
-    session_side_s pc;
-} session_s;
-
+//extern volatile sig_atomic_t sigcont_received;
+//extern void setup_sigcont_handler(void);
+//
+//extern volatile sig_atomic_t sigint_received;
+//extern void setup_sigint_handler(void);
+//
+///* socket handling */
+//extern int init_socket(int *sock);
+//
+//
+///* protocol helpers */
+//
+//typedef struct {
+//    uint32_t session_id;
+//    uint64_t session_key;
+//    uint32_t connection_id;
+//    uint16_t connection_seq;
+//} session_side_s;
+//
+//typedef struct {
+//    session_side_s plc;
+//    session_side_s pc;
+//} session_s;
+//
