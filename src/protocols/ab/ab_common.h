@@ -28,7 +28,7 @@
 #ifndef __PLCTAG_AB_AB_COMMON_H__
 #define __PLCTAG_AB_AB_COMMON_H__ 1
 
-#include <lib/libplctag.h>
+#include <lib/libplctag2.h>
 #include <lib/tag.h>
 #include <util/vector.h>
 
