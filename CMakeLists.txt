@@ -233,7 +233,7 @@ if(UNIX)
 	add_library(plctag_static STATIC ${libplctag_SRCS} )
 	set_target_properties(plctag_static PROPERTIES VERSION "${libplctag_VERSION_MAJOR}.${libplctag_VERSION_MINOR}" OUTPUT_NAME "plctag")
 
-	set(tool_lib "plctag_static")
+	set(tool_lib "plctag_dyn")
 elseif(WIN32)
     # skipping static lib on Windows
 
@@ -359,9 +359,9 @@ foreach ( example ${example_PROGRAMS} )
     set_source_files_properties("${example_SRC_PATH}/${example}.c" PROPERTIES COMPILE_FLAGS "${C99_FLAGS} ${BASE_C_FLAGS}" )
     add_executable( ${example} "${example_SRC_PATH}/${example}.c" "${example_SRC_PATH}/${example_PROG_UTIL}" "${example_SRC_PATH}/utils.h" )
 
-	if(STATIC_LINK_FLAGS)
-		set_target_properties(tag_rw PROPERTIES LINK_FLAGS ${STATIC_LINK_FLAGS} )
-	endif()
+#   if(STATIC_LINK_FLAGS)
+#       set_target_properties(${example} PROPERTIES LINK_FLAGS ${STATIC_LINK_FLAGS} )
+#   endif()
 
     target_link_libraries(tag_rw ${example_LIBRARIES} )
 endif()
