@@ -226,12 +226,12 @@ ENDFOREACH()
 add_library(plctag_dyn SHARED ${libplctag_SRCS} )
 
 # set various properties on them
-set_target_properties(plctag_dyn PROPERTIES SOVERSION "${libplctag_VERSION_MAJOR}.${libplctag_VERSION_MINOR}" OUTPUT_NAME "plctag")
+set_target_properties(plctag_dyn PROPERTIES SOVERSION "${libplctag_VERSION_MAJOR}.${libplctag_VERSION_MINOR}" OUTPUT_NAME "plctag2")
 
 if(UNIX)
 	# static library
 	add_library(plctag_static STATIC ${libplctag_SRCS} )
-	set_target_properties(plctag_static PROPERTIES VERSION "${libplctag_VERSION_MAJOR}.${libplctag_VERSION_MINOR}" OUTPUT_NAME "plctag")
+	set_target_properties(plctag_static PROPERTIES VERSION "${libplctag_VERSION_MAJOR}.${libplctag_VERSION_MINOR}" OUTPUT_NAME "plctag2")
 
 	set(tool_lib "plctag_dyn")
 elseif(WIN32)
