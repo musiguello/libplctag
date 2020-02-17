@@ -49,7 +49,7 @@ static THREAD_LOCAL int tag_id = 0;
 
 
 /* only output the version once */
-static lock_t printed_version = LOCK_INIT;
+//static lock_t printed_version = LOCK_INIT;
 
 
 
@@ -58,6 +58,8 @@ extern int set_debug_level(int level)
     int old_level = debug_level;
 
     debug_level = level;
+
+    pdebug(DEBUG_INFO, "Setting debug level to %d from %d.", debug_level, old_level);
 
     return old_level;
 }
@@ -144,12 +146,12 @@ extern void pdebug_impl(const char *func, int line_num, int debug_level, const c
 
     /* print only once */
     /* FIXME - this may not be safe. */
-    if(!printed_version && debug_level >= DEBUG_INFO) {
-        if(lock_acquire_try((lock_t*)&printed_version)) {
-            /* create the output string template */
-            fprintf(stderr,"%s INFO libplctag version %s, debug level %d.\n",prefix, VERSION, debug_level);
-        }
-    }
+//    if(!printed_version && debug_level >= DEBUG_INFO) {
+//        if(lock_acquire_try((lock_t*)&printed_version)) {
+//            /* create the output string template */
+//            fprintf(stderr,"%s INFO libplctag version %s, debug level %d.\n",prefix, VERSION, debug_level);
+//        }
+//    }
 
     /* create the output string template */
     snprintf(output, sizeof(output),"%s %s %s:%d %s\n",prefix, debug_level_name[debug_level], func, line_num, templ);

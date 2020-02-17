@@ -23,7 +23,7 @@
 #include "tests/regression/util.h"
 #include "tests/regression/logix.h"
 #include "tests/regression/packet.h"
-#include "lib/libplctag.h"
+#include "lib/libplctag2.h"
 
 /*
 

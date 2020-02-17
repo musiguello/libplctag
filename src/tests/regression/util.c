@@ -188,3 +188,43 @@ int init_socket(int *sock)
     return PLCTAG_STATUS_OK;
 }
 
+
+
+
+
+#define COLUMNS (10)
+
+void slice_dump(slice_s s)
+{
+    int max_row, row, column;
+    char row_buf[300]; /* MAGIC */
+
+    /* determine the number of rows we will need to print. */
+    max_row = (s.len  + (COLUMNS - 1))/COLUMNS;
+
+    for(row = 0; row < max_row; row++) {
+        int offset = (row * COLUMNS);
+        int row_offset;
+
+        /* print the prefix and address */
+        row_offset = snprintf(&row_buf[0], sizeof(row_buf),"%03d", offset);
+
+        for(column = 0; column < COLUMNS && ((row * COLUMNS) + column) < s.len && row_offset < (int)sizeof(row_buf); column++) {
+            offset = (row * COLUMNS) + column;
+            row_offset += snprintf(&row_buf[row_offset], sizeof(row_buf) - (size_t)row_offset, " %02x", s.data[offset]);
+        }
+
+        /* zero terminate */
+        if(row_offset < (int)sizeof(row_buf)) {
+            row_buf[row_offset] = (char)0;
+        } else {
+            /* this might truncate the string, but it is safe. */
+            row_buf[sizeof(row_buf)-1] = (char)0;
+        }
+
+        /* output it, finally */
+        fprintf(stderr,"%s\n", row_buf);
+    }
+}
+
+

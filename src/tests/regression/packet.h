@@ -97,6 +97,3 @@
 extern slice_s pack_slice(slice_s outbuf, const char *tmpl, ...);
 extern slice_s unpack_slice(slice_s inbuf, const char *tmpl, ...);
 
-/* useful for debugging. */
-extern void slice_dump(slice_s s);
-

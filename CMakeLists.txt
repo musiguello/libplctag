@@ -126,6 +126,9 @@ elseif (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
     # /MD$<$<STREQUAL:$<CONFIGURATION>,Debug>:d>
 endif()
 
+
+message("CMake build type: ${CMAKE_BUILD_TYPE}")
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(BASE_FLAGS "${BASE_DEBUG_FLAGS}")
 else()
@@ -279,6 +282,24 @@ if (UNIX)
         target_link_libraries ( lgx_sim pthread )
     endif()
 
+
+    # regression tests
+    set ( regression_test_FILES "${test_SRC_PATH}/regression/test.c"
+                                "${test_SRC_PATH}/regression/logix.c"
+                                "${test_SRC_PATH}/regression/logix.h"
+                                "${test_SRC_PATH}/regression/packet.c"
+                                "${test_SRC_PATH}/regression/packet.h"
+                                "${test_SRC_PATH}/regression/util.c"
+                                "${test_SRC_PATH}/regression/util.h" )
+
+
+    foreach ( file ${regression_test_FILES} )
+        set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${BASE_FLAGS}")
+    endforeach ( file )
+
+    add_executable ( ab_regression ${regression_test_FILES} )
+    target_link_libraries ( ab_regression plctag pthread )
+
     # hashtable test
     set(test_hashtable_FILES "${test_SRC_PATH}/hashtable/test_hashtable.c"
                              "${util_SRC_PATH}/hashtable.h"
@@ -291,24 +312,6 @@ if (UNIX)
     add_executable(test_hashtable ${test_hashtable_FILES} )
     target_link_libraries(test_hashtable plctag pthread)
 
-    # regression tests
-    set ( regression_test_FILES "${test_SRC_PATH}/regression/ab.c"
-                                "${test_SRC_PATH}/regression/packet.c"
-                                "${test_SRC_PATH}/regression/packet.h"
-                                "${test_SRC_PATH}/regression/slice.h"
-                                "${test_SRC_PATH}/regression/socket.c"
-                                "${test_SRC_PATH}/regression/socket.h"
-                                "${test_SRC_PATH}/regression/util.c"
-                                "${test_SRC_PATH}/regression/util.h"
-        )
-
-
-    foreach ( file ${regression_test_FILES} )
-        set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${BASE_FLAGS} -std=c11")
-    endforeach ( file )
-
-    add_executable ( ab_regression ${regression_test_FILES} )
-    target_link_libraries ( ab_regression plctag_dyn pthread )
 
     # example programs
     set ( example_PROGRAMS async

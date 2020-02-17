@@ -28,7 +28,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "lib/libplctag.h"
+#include "lib/libplctag2.h"
 #include "tests/regression/logix.h"
 #include "tests/regression/packet.h"
 #include "tests/regression/util.h"
@@ -130,15 +130,15 @@ int run_test(test_entry *test)
     sigint_received = 0;
 
     /* start up the emulator first.  This waits for the emulator to be ready. */
-    info("Starting up the emulator process.");
+    info("Starting up emulator process.");
     emulator_pid = startup_emulator(parent_pid, test);
     if(emulator_pid < 0) {
         /* whoops! */
-        error("Unable to start up the emulator process!");
+        error("Unable to start up emulator process!");
     }
 
     /* wait for the emulator to spin up. */
-    info("Waiting for the emulator to start up.");
+    info("Waiting for emulator to start up.");
     while(!sigint_received) {
         util_sleep_ms(10);
     }

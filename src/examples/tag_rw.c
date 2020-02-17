@@ -94,9 +94,9 @@ void print_lib_version(void)
 {
     int32_t tag = 0;
     int i, size = 0;
-    char ver[16] = {0,};
+    char ver[32] = {0};
 
-    tag = plc_tag_create("make=system&family=library&name=version&debug=4", DATA_TIMEOUT);
+    tag = plc_tag_create("make=system&family=library&name=version", DATA_TIMEOUT);
     if(tag < 0) {
         fprintf(stderr,"ERROR %s: Could not create tag!\n", plc_tag_decode_error(tag));
         return;
@@ -110,7 +110,7 @@ void print_lib_version(void)
         ver[i] = (char)plc_tag_get_uint8(tag,i);
     }
 
-    printf("Library version %s(%d)\n", ver, size);
+    printf("Library version %s.\n", ver);
 
     plc_tag_destroy(tag);
 }
@@ -212,9 +212,9 @@ int main(int argc, char **argv)
 
     check_version();
 
-    print_lib_version();
-
     parse_args(argc, argv);
+
+    print_lib_version();
 
     /* check arguments */
     if(!path || !data_type) {

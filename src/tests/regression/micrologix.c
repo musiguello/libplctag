@@ -10,39 +10,10 @@
  *   This program is distributed in the hope that it will be useful,       *
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
+ *   GNU Library General Public License for more details.                  *
  *                                                                         *
  *   You should have received a copy of the GNU Library General Public     *
  *   License along with this program; if not, write to the                 *
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-
-#pragma once
-
-#include <stdint.h>
-#include <signal.h>
-#include <unistd.h>
-#include <wait.h>
-#include <stdlib.h>
-#include <tests/regression/slice.h>
-
-extern int util_sleep_ms(int ms);
-extern int64_t util_time_ms(void);
-
-/* debug helpers */
-extern void error(const char *templ, ...);
-extern void info(const char *templ, ...);
-extern void slice_dump(slice_s s);
-
-/* signal helpers. */
-extern volatile sig_atomic_t sigcont_received;
-extern void setup_sigcont_handler(void);
-
-extern volatile sig_atomic_t sigint_received;
-extern void setup_sigint_handler(void);
-
-/* socket handling */
-extern int init_socket(int *sock);
-
-
