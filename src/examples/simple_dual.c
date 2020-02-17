@@ -20,6 +20,7 @@
 
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "../lib/libplctag2.h"
 #include "utils.h"
 
