@@ -21,7 +21,7 @@
 #pragma once
 
 #include <stddef.h>
-#include "lib/libplctag.h"
+#include "lib/libplctag2.h"
 #include <tests/regression/slice.h>
 #include <tests/regression/socket.h>
 
@@ -99,3 +99,4 @@ extern slice_s unpack_slice(slice_s inbuf, const char *tmpl, ...);
 
 /* useful for debugging. */
 extern void slice_dump(slice_s s);
+

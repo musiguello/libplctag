@@ -34,7 +34,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <netdb.h>
-#include "lib/libplctag.h"
+#include "lib/libplctag2.h"
 
 
 /*
