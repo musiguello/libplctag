@@ -85,6 +85,7 @@ void check_version(void)
 {
     if(plc_tag_check_lib_version(REQUIRED_VERSION) != PLCTAG_STATUS_OK) {
         printf("Library version %d.%d.%d requested, but linked library version is not compatible!\n", REQUIRED_VERSION);
+        exit(1);
     }
 }
 
