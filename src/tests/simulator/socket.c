@@ -34,9 +34,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <tests/regression/socket.h>
+#include <tests/simulator/socket.h>
+#include <tests/simulator/utils.h>
 #include <lib/libplctag2.h>
 
+
+#define LISTEN_QUEUE (10)
 
 int socket_open(const char *host, const char *port)
 {
@@ -97,7 +100,7 @@ int socket_open(const char *host, const char *port)
     rc = getaddrinfo(host, port, &addr_hints, &addr_info);
     if (rc != 0) {
         printf("ERROR: getaddrinfo() failed: %s\n", gai_strerror(rc));
-        exit(PLCTAG_ERR_CREATE);
+        return PLCTAG_ERR_CREATE;
     }
 
     /* finally, finally, finally, we get to open a socket! */
@@ -105,21 +108,23 @@ int socket_open(const char *host, const char *port)
 
     if (sock < 0) {
         printf("ERROR: socket() failed: %s\n", gai_strerror(sock));
-        exit(PLCTAG_ERR_CREATE);
+        return PLCTAG_ERR_CREATE;
     }
 
     /* if this is going to be a server socket, bind it. */
-    if(!host) {
+    if(strcmp(host,"0.0.0.0") == 0) {
+        info("socket_open() setting up server socket.   Binding to address 0.0.0.0.");
+
         rc = bind(sock, addr_info->ai_addr, addr_info->ai_addrlen);
         if (rc < 0)	{
             printf("ERROR: Unable to bind() socket: %s\n", gai_strerror(rc));
-            exit(PLCTAG_ERR_CREATE);
+            return PLCTAG_ERR_CREATE;
         }
 
-        rc = listen(sock, 10);
+        rc = listen(sock, LISTEN_QUEUE);
         if(rc < 0) {
             printf("ERROR: Unable to call listen() on socket: %s\n", gai_strerror(rc));
-            exit(PLCTAG_ERR_CREATE);
+            return PLCTAG_ERR_CREATE;
         }
 
         /* set up our socket to allow reuse if we crash suddenly. */
@@ -128,7 +133,7 @@ int socket_open(const char *host, const char *port)
         if(rc) {
             socket_close(sock);
             printf("ERROR: Setting SO_REUSEADDR on socket failed: %s\n", gai_strerror(rc));
-            exit(PLCTAG_ERR_CREATE);
+             return PLCTAG_ERR_CREATE;
         }
     } else {
         struct timeval timeout; /* used for timing out connections etc. */

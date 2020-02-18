@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 
-#include "tests/regression/util.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,7 +33,8 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <netdb.h>
-#include "lib/libplctag2.h"
+#include <lib/libplctag2.h>
+#include <tests/simulator/utils.h>
 
 
 /*

@@ -61,7 +61,7 @@ inline static uint16_t get_uint16_le(slice_s input_buf, int offset) {
     uint16_t res = 0;
 
     if((offset + 2) <= input_buf.len) {
-        res = ((uint16_t)slice_at(res_buf, offset) + (uint16_t)(slice_at(res_buf, offset + 1) << 8));
+        res = ((uint16_t)slice_at(input_buf, offset) + (uint16_t)(slice_at(input_buf, offset + 1) << 8));
     }
 
     return res;
@@ -72,10 +72,10 @@ inline static uint32_t get_uint32_le(slice_s input_buf, int offset) {
     uint32_t res = 0;
 
     if((offset + 4) <= input_buf.len) {
-        res =  (uint32_t)(slice_at(res_buf, offset))
-             + (uint32_t)(slice_at(res_buf, offset + 1) << 8)
-             + (uint32_t)(slice_at(res_buf, offset + 2) << 16)
-             + (uint32_t)(slice_at(res_buf, offset + 3) << 24);
+        res =  (uint32_t)(slice_at(input_buf, offset))
+             + (uint32_t)(slice_at(input_buf, offset + 1) << 8)
+             + (uint32_t)(slice_at(input_buf, offset + 2) << 16)
+             + (uint32_t)(slice_at(input_buf, offset + 3) << 24);
     }
 
     return res;
@@ -86,18 +86,67 @@ inline static uint64_t get_uint64_le(slice_s input_buf, int offset) {
     uint64_t res = 0;
 
     if((offset + 4) <= input_buf.len) {
-        res =  ((uint64_t)slice_at(res_buf, offset))
-             + ((uint64_t)slice_at(res_buf, offset + 1) << 8)
-             + ((uint64_t)slice_at(res_buf, offset + 2) << 16)
-             + ((uint64_t)slice_at(res_buf, offset + 3) << 24)
-             + ((uint64_t)slice_at(res_buf, offset + 3) << 32)
-             + ((uint64_t)slice_at(res_buf, offset + 3) << 40)
-             + ((uint64_t)slice_at(res_buf, offset + 3) << 48)
-             + ((uint64_t)slice_at(res_buf, offset + 3) << 56);
+        res =  ((uint64_t)slice_at(input_buf, offset))
+             + ((uint64_t)slice_at(input_buf, offset + 1) << 8)
+             + ((uint64_t)slice_at(input_buf, offset + 2) << 16)
+             + ((uint64_t)slice_at(input_buf, offset + 3) << 24)
+             + ((uint64_t)slice_at(input_buf, offset + 3) << 32)
+             + ((uint64_t)slice_at(input_buf, offset + 3) << 40)
+             + ((uint64_t)slice_at(input_buf, offset + 3) << 48)
+             + ((uint64_t)slice_at(input_buf, offset + 3) << 56);
     }
 
     return res;
 }
+
+
+
+inline static int set_uint16_le(slice_s output_buf, int offset, uint16_t val) {
+    int result = PLCTAG_STATUS_OK;
+
+    if((offset + 2) <= output_buf.len) {
+        slice_at_put(output_buf, offset + 0, (uint8_t)(val & 0xFF));
+        slice_at_put(output_buf, offset + 1, (uint8_t)((val >> 8) & 0xFF));
+    }
+
+    return result;
+}
+
+
+inline static int set_uint32_le(slice_s output_buf, int offset, uint32_t val) {
+    int result = PLCTAG_STATUS_OK;
+
+    if((offset + 4) <= output_buf.len) {
+        slice_at_put(output_buf, offset + 0, (uint8_t)(val & 0xFF));
+        slice_at_put(output_buf, offset + 1, (uint8_t)((val >> 8) & 0xFF));
+        slice_at_put(output_buf, offset + 2, (uint8_t)((val >> 16) & 0xFF));
+        slice_at_put(output_buf, offset + 3, (uint8_t)((val >> 24) & 0xFF));
+    }
+
+    return result;
+}
+
+
+
+
+inline static int set_uint64_le(slice_s output_buf, int offset, uint64_t val) {
+    int result = PLCTAG_STATUS_OK;
+
+    if((offset + 4) <= output_buf.len) {
+        slice_at_put(output_buf, offset + 0, (uint8_t)(val & 0xFF));
+        slice_at_put(output_buf, offset + 1, (uint8_t)((val >> 8) & 0xFF));
+        slice_at_put(output_buf, offset + 2, (uint8_t)((val >> 16) & 0xFF));
+        slice_at_put(output_buf, offset + 3, (uint8_t)((val >> 24) & 0xFF));
+        slice_at_put(output_buf, offset + 4, (uint8_t)((val >> 32) & 0xFF));
+        slice_at_put(output_buf, offset + 5, (uint8_t)((val >> 40) & 0xFF));
+        slice_at_put(output_buf, offset + 6, (uint8_t)((val >> 48) & 0xFF));
+        slice_at_put(output_buf, offset + 7, (uint8_t)((val >> 56) & 0xFF));
+    }
+
+    return result;
+}
+
+
 
 
 
@@ -111,7 +160,7 @@ typedef struct {
     uint64_t sender_context;
     uint32_t options;
     slice_s payload;
-} eip_header;
+} eip_packet_s;
 #define EIP_HEADER_SIZE (24) /* 24 bytes */
 
 /* CPF unconnected message. */
@@ -122,7 +171,7 @@ typedef struct {
     uint16_t udi_item_type;
     uint16_t udi_item_length;
     slice_s payload;
-} common_packet_header_unconn;
+} uc_cpf_s;
 
 
 /* CPF connected message. */
@@ -135,7 +184,8 @@ typedef struct {
     uint16_t cdi_item_length;
     uint16_t conn_seq_num; /* warning: counted in the length! */
     slice_s payload;
-} common_packet_header_conn;
+} c_cpf_s;
 
 
-extern eip_header read_eip_packet(int sock_fd, slice_s input_buffer);
+extern eip_packet_s read_eip_packet(int sock_fd, slice_s input_buffer);
+

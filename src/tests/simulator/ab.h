@@ -20,8 +20,15 @@
 
 #pragma once
 
-#include <tests/simulators/common/slice.h>
-#include <tests/simulators/common/packet.h>
 
-extern int validate_register_session_request(eip_header reg_session_req);
-extern slice_s marshall_register_session_response(slice_s output_buf, uint32_t session_handle);
+#include <stdint.h>
+#include <tests/simulator/slice.h>
+
+typedef struct {
+    int client_sock;
+    slice_s buffer;
+
+    uint32_t session_handle;
+    uint64_t client_session_context;
+} context_s;
+

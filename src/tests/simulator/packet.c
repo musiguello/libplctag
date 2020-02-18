@@ -19,19 +19,19 @@
  ***************************************************************************/
 
 
-#include <tests/simulators/common/packet.h>
-#include <tests/simulators/common/slice.h>
-#include <tests/simulators/common/socket.h>
-#include <tests/simulators/common/utils.h>
 #include <string.h>
+#include <tests/simulator/packet.h>
+#include <tests/simulator/slice.h>
+#include <tests/simulator/socket.h>
+#include <tests/simulator/utils.h>
 
 
-eip_header read_eip_packet(int sock, slice_s input_buf)
+eip_packet_s read_eip_packet(int sock, slice_s input_buf)
 {
     int bytes_left_to_read = EIP_HEADER_SIZE;
     slice_s tmp_in_buf = input_buf;
     int bytes_read = 0;
-    eip_header result;
+    eip_packet_s result;
 
     memset(&result, 0, sizeof(result));
 
@@ -59,6 +59,9 @@ eip_header read_eip_packet(int sock, slice_s input_buf)
     } while(bytes_left_to_read > 0);
 
     tmp_in_buf = slice_trunc(input_buf, bytes_read);
+
+    info("read_eip_packet() got packet:");
+    slice_dump(tmp_in_buf);
 
     /* unmarshall the data in the packet. */
     result.command = get_uint16_le(tmp_in_buf, 0);

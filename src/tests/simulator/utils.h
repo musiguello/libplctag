@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include <wait.h>
 #include <stdlib.h>
-#include <tests/regression/slice.h>
+#include <tests/simulator/slice.h>
 
 extern int util_sleep_ms(int ms);
 extern int64_t util_time_ms(void);

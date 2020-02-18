@@ -263,42 +263,64 @@ endif()
 
 # add the examples and tests
 if (UNIX)
-    if(C11_SUPPORT)
-        # Logix simulator
-        set ( lgx_sim_FILES "${test_SRC_PATH}/lgx_sim/log.h"
-                            "${test_SRC_PATH}/lgx_sim/main.c"
-                            "${test_SRC_PATH}/lgx_sim/packet.h"
-                            "${test_SRC_PATH}/lgx_sim/main.c"
-                            "${test_SRC_PATH}/lgx_sim/session.c"
-                            "${test_SRC_PATH}/lgx_sim/session.h"
-                            "${test_SRC_PATH}/lgx_sim/tags.c"
-                            "${test_SRC_PATH}/lgx_sim/tags.h" )
-
-        foreach ( file ${lgx_sim_FILES} )
-            set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${BASE_FLAGS} -std=c11")
-        endforeach ( file )
-
-        add_executable ( lgx_sim ${lgx_sim_FILES} )
-        target_link_libraries ( lgx_sim pthread )
-    endif()
+#    if(C11_SUPPORT)
+#        # Logix simulator
+#        set ( lgx_sim_FILES "${test_SRC_PATH}/lgx_sim/log.h"
+#                            "${test_SRC_PATH}/lgx_sim/main.c"
+#                            "${test_SRC_PATH}/lgx_sim/packet.h"
+#                            "${test_SRC_PATH}/lgx_sim/main.c"
+#                            "${test_SRC_PATH}/lgx_sim/session.c"
+#                            "${test_SRC_PATH}/lgx_sim/session.h"
+#                            "${test_SRC_PATH}/lgx_sim/tags.c"
+#                            "${test_SRC_PATH}/lgx_sim/tags.h" )
+#
+#        foreach ( file ${lgx_sim_FILES} )
+#            set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${BASE_FLAGS} -std=c11")
+#        endforeach ( file )
+#
+#        add_executable ( lgx_sim ${lgx_sim_FILES} )
+#        target_link_libraries ( lgx_sim pthread )
+#    endif()
 
 
     # regression tests
-    set ( regression_test_FILES "${test_SRC_PATH}/regression/test.c"
-                                "${test_SRC_PATH}/regression/logix.c"
-                                "${test_SRC_PATH}/regression/logix.h"
-                                "${test_SRC_PATH}/regression/packet.c"
-                                "${test_SRC_PATH}/regression/packet.h"
-                                "${test_SRC_PATH}/regression/util.c"
-                                "${test_SRC_PATH}/regression/util.h" )
+    #set ( regression_test_FILES "${test_SRC_PATH}/regression/test.c"
+    #                            "${test_SRC_PATH}/regression/logix.c"
+    #                            "${test_SRC_PATH}/regression/logix.h"
+    #                            "${test_SRC_PATH}/regression/packet.c"
+    #                            "${test_SRC_PATH}/regression/packet.h"
+    #                            "${test_SRC_PATH}/regression/util.c"
+    #                            "${test_SRC_PATH}/regression/util.h" )
+    #
+    #
+    #foreach ( file ${regression_test_FILES} )
+    #    set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${BASE_FLAGS}")
+    #endforeach ( file )
+    #
+    #add_executable ( ab_regression ${regression_test_FILES} )
+    #target_link_libraries ( ab_regression plctag pthread )
 
 
-    foreach ( file ${regression_test_FILES} )
-        set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${BASE_FLAGS}")
+    set ( simulator_FILES "${test_SRC_PATH}/simulator/ab.c"
+                                "${test_SRC_PATH}/simulator/ab.h"
+                                "${test_SRC_PATH}/simulator/handle_register_session.c"
+                                "${test_SRC_PATH}/simulator/handle_register_session.h"
+                                "${test_SRC_PATH}/simulator/packet.c"
+                                "${test_SRC_PATH}/simulator/packet.h"
+                                "${test_SRC_PATH}/simulator/slice.h"
+                                "${test_SRC_PATH}/simulator/socket.c"
+                                "${test_SRC_PATH}/simulator/socket.h"
+                                "${test_SRC_PATH}/simulator/utils.c"
+                                "${test_SRC_PATH}/simulator/utils.h" )
+
+    foreach ( file ${simulator_FILES} )
+        set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${C99_FLAGS} ${BASE_FLAGS}")
     endforeach ( file )
 
-    add_executable ( ab_regression ${regression_test_FILES} )
-    target_link_libraries ( ab_regression plctag pthread )
+    add_executable ( simulator ${simulator_FILES} )
+    target_link_libraries ( simulator plctag pthread )
+
+
 
     # hashtable test
     set(test_hashtable_FILES "${test_SRC_PATH}/hashtable/test_hashtable.c"
