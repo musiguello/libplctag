@@ -20,27 +20,30 @@
 
 #pragma once
 
-
-#include <stdint.h>
+#include <tests/simulator/ab.h>
 #include <tests/simulator/slice.h>
 
+/* standard CPF unconnected message with two items. */
 typedef struct {
-    int client_sock;
-    slice_s buffer;
+    /* seems to be a prefix on each CPF header. */
+    uint32_t interface_handle;      /* ALWAYS 0 */
+    uint16_t router_timeout;        /* in seconds */
 
-    uint32_t session_handle;
-    uint64_t client_session_context;
+    /* the CPF body */
+    uint16_t item_count;
+    uint16_t nai_item_type;
+    uint16_t nai_item_length;
+    uint16_t udi_item_type;
+    uint16_t udi_item_length;
+    slice_s payload;
+} uc_cpf_s;
 
-    uint32_t client_connection_id;
-    uint16_t client_connection_seq;
-    uint32_t server_connection_id;
-    uint16_t server_connection_seq;
-} context_s;
+#define UC_CPF_HEADER_SIZE (16)
+
+#define CPF_ITEM_NAI ((uint16_t)0x0000) /* NULL Address Item */
+#define CPF_ITEM_UDI ((uint16_t)0x00B2) /* Unconnected data item */
 
 
-
-/* CPF Item Types */
-#define CPF_ITEM_CAI ((uint16_t)0x00A1) /* connected address item */
-#define CPF_ITEM_CDI ((uint16_t)0x00B1) /* connected data item */
-
+extern slice_s handle_unconnected_request(context_s *context, slice_s raw_request);
+extern slice_s marshall_unconnected_response(context_s *context, slice_s output_buf, uc_cpf_s *uc_resp);
 

@@ -20,27 +20,8 @@
 
 #pragma once
 
-
-#include <stdint.h>
+#include <tests/simulator/ab.h>
 #include <tests/simulator/slice.h>
 
-typedef struct {
-    int client_sock;
-    slice_s buffer;
-
-    uint32_t session_handle;
-    uint64_t client_session_context;
-
-    uint32_t client_connection_id;
-    uint16_t client_connection_seq;
-    uint32_t server_connection_id;
-    uint16_t server_connection_seq;
-} context_s;
-
-
-
-/* CPF Item Types */
-#define CPF_ITEM_CAI ((uint16_t)0x00A1) /* connected address item */
-#define CPF_ITEM_CDI ((uint16_t)0x00B1) /* connected data item */
-
+extern slice_s handle_register_session(context_s *context, slice_s raw_request);
 

@@ -222,24 +222,33 @@ slice_s socket_read(int sock, slice_s in_buf)
 
 int socket_write(int sock, slice_s out_buf)
 {
-    int rc = (int)send(sock, (char *)out_buf.data, (size_t)out_buf.len, 0);
+    int total_bytes_written = 0;
+    int rc = 0;
+    slice_s tmp_out_buf = out_buf;
 
-    if(rc < 0) {
+    do {
+        rc = (int)send(sock, (char *)tmp_out_buf.data, (size_t)tmp_out_buf.len, 0);
+
+        /* was there an error? */
+        if(rc < 0) {
 #ifdef WIN32
-        rc = WSAGetLastError();
-        if(rc == WSAEWOULDBLOCK) {
+            rc = WSAGetLastError();
+            if(rc == WSAEWOULDBLOCK) {
 #else
-        rc = errno;
-        if(rc == EAGAIN || rc == EWOULDBLOCK) {
+            rc = errno;
+            if(rc == EAGAIN || rc == EWOULDBLOCK) {
 #endif
-            rc = PLCTAG_ERR_PARTIAL;
+                /* just keep looping. */
+                rc = 0;
+            } else {
+                printf("Socket write error rc=%d.\n", rc);
+                return PLCTAG_ERR_WRITE;
+            }
         } else {
-            printf("Socket write error rc=%d.\n", rc);
-            rc = PLCTAG_ERR_READ;
+            tmp_out_buf = slice_remainder(out_buf, total_bytes_written);
+            total_bytes_written += rc;
         }
-    } else {
-        rc = PLCTAG_STATUS_OK;
-    }
+    } while(total_bytes_written < out_buf.len);
 
     return rc;
 }

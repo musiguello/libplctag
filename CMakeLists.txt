@@ -302,16 +302,21 @@ if (UNIX)
 
 
     set ( simulator_FILES "${test_SRC_PATH}/simulator/ab.c"
-                                "${test_SRC_PATH}/simulator/ab.h"
-                                "${test_SRC_PATH}/simulator/handle_register_session.c"
-                                "${test_SRC_PATH}/simulator/handle_register_session.h"
-                                "${test_SRC_PATH}/simulator/packet.c"
-                                "${test_SRC_PATH}/simulator/packet.h"
-                                "${test_SRC_PATH}/simulator/slice.h"
-                                "${test_SRC_PATH}/simulator/socket.c"
-                                "${test_SRC_PATH}/simulator/socket.h"
-                                "${test_SRC_PATH}/simulator/utils.c"
-                                "${test_SRC_PATH}/simulator/utils.h" )
+                          "${test_SRC_PATH}/simulator/ab.h"
+                          "${test_SRC_PATH}/simulator/cip.h"
+                          "${test_SRC_PATH}/simulator/eip.c"
+                          "${test_SRC_PATH}/simulator/eip.h"
+                          "${test_SRC_PATH}/simulator/forward_open_request.c"
+                          "${test_SRC_PATH}/simulator/forward_open_request.h"
+                          "${test_SRC_PATH}/simulator/register_session.c"
+                          "${test_SRC_PATH}/simulator/register_session.h"
+                          "${test_SRC_PATH}/simulator/slice.h"
+                          "${test_SRC_PATH}/simulator/socket.c"
+                          "${test_SRC_PATH}/simulator/socket.h"
+                          "${test_SRC_PATH}/simulator/unconnected_request.c"
+                          "${test_SRC_PATH}/simulator/unconnected_request.h"
+                          "${test_SRC_PATH}/simulator/utils.c"
+                          "${test_SRC_PATH}/simulator/utils.h" )
 
     foreach ( file ${simulator_FILES} )
         set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${C99_FLAGS} ${BASE_FLAGS}")

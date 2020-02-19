@@ -20,27 +20,28 @@
 
 #pragma once
 
-
 #include <stdint.h>
+#include <lib/libplctag2.h>
+#include <tests/simulator/ab.h>
 #include <tests/simulator/slice.h>
 
+#define EIP_REGISTER_SESSION     ((uint16_t)0x0065)
+#define EIP_UNREGISTER_SESSION   ((uint16_t)0x0066)
+#define EIP_UNCONNECTED_DATA     ((uint16_t)0x006F)
+#define EIP_CONNECTED_DATA       ((uint16_t)0x0070)
+
+/* Common packet types */
 typedef struct {
-    int client_sock;
-    slice_s buffer;
-
+    uint16_t command;
+    uint16_t length;
     uint32_t session_handle;
-    uint64_t client_session_context;
+    int32_t status;
+    uint64_t sender_context;
+    uint32_t options;
+    slice_s payload;
+} eip_packet_s;
+#define EIP_HEADER_SIZE (24) /* 24 bytes */
 
-    uint32_t client_connection_id;
-    uint16_t client_connection_seq;
-    uint32_t server_connection_id;
-    uint16_t server_connection_seq;
-} context_s;
-
-
-
-/* CPF Item Types */
-#define CPF_ITEM_CAI ((uint16_t)0x00A1) /* connected address item */
-#define CPF_ITEM_CDI ((uint16_t)0x00B1) /* connected data item */
-
-
+extern slice_s read_eip_packet(int sock, slice_s input_buf);
+extern slice_s dispatch_eip_packet(context_s *context, slice_s raw_eip_request);
+extern slice_s marshall_eip_response(context_s *context, slice_s output_buf, eip_packet_s *eip_packet);

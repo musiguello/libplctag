@@ -31,8 +31,8 @@
 #endif
 
 #include <tests/simulator/ab.h>
-#include <tests/simulator/handle_register_session.h>
-#include <tests/simulator/packet.h>
+#include <tests/simulator/eip.h>
+#include <tests/simulator/register_session.h>
 #include <tests/simulator/socket.h>
 #include <tests/simulator/utils.h>
 
@@ -41,7 +41,6 @@
 
 static void SIGINT_handler(int not_used);
 static void setup_sigint_handler(void);
-static slice_s dispatch_eip_packet(context_s *context, eip_packet_s header);
 
 
 volatile sig_atomic_t sigint_received = 0;
@@ -78,7 +77,7 @@ int main(int argc, char **argv)
     context.buffer = slice_make(buffer, BUF_SIZE);
 
     while(!sigint_received) {
-        eip_packet_s eip_packet;
+        slice_s request;
         slice_s response;
         int rc;
 
@@ -89,20 +88,21 @@ int main(int argc, char **argv)
             error("ERROR: accept() call failed: %s\n", gai_strerror(context.client_sock));
         }
 
-        eip_packet = read_eip_packet(context.client_sock, context.buffer);
-        if(eip_packet.status != 0) {
-            error("Something went wrong when reading the client socket!");
+        request = read_eip_packet(context.client_sock, context.buffer);
+        if(slice_err(request) != PLCTAG_STATUS_OK) {
+            error("Something went wrong when reading the client socket!  Error = %s.", plc_tag_decode_error(slice_err(request)));
         }
 
-        info("Got packet from client!");
-
-
-        response = dispatch_eip_packet(&context, eip_packet);
+        /* dispatch the packet as best we can. */
+        response = dispatch_eip_packet(&context, request);
         if(slice_err(response)) {
-            error("Unable to dispatch packet!");
+            error("Unable to dispatch packet! Error = %s.", plc_tag_decode_error(slice_err(response)));
         }
 
         rc = socket_write(context.client_sock, response);
+        if(rc != PLCTAG_STATUS_OK) {
+            error("Unable to write response!  Error = %s.", plc_tag_decode_error(rc));
+        }
     }
 
     return PLCTAG_STATUS_OK;
@@ -129,22 +129,3 @@ void setup_sigint_handler(void)
 }
 
 
-
-slice_s dispatch_eip_packet(context_s *context, eip_packet_s packet)
-{
-    slice_s result;
-
-    switch(packet.command) {
-        case EIP_REGISTER_SESSION:
-            result = handle_register_session(context, packet);
-            break;
-
-
-        default:
-            info("Unsupported EIP packet type %x!", packet.command);
-            result = slice_make_err(PLCTAG_ERR_UNSUPPORTED);
-            break;
-    }
-
-    return result;
-}

@@ -20,9 +20,35 @@
 
 #pragma once
 
-#include <tests/simulator/ab.h>
-#include <tests/simulator/slice.h>
-#include <tests/simulator/packet.h>
+/* CIP commands. */
+#define CIP_CMD_RESPONSE                ((uint8_t)0x80)
+#define CIP_CMD_PCCC_EXECUTE            ((uint8_t)0x4B)
+#define CIP_CMD_READ                    ((uint8_t)0x4C)
+#define CIP_CMD_WRITE                   ((uint8_t)0x4D)
+#define CIP_CMD_FORWARD_CLOSE           ((uint8_t)0x4E)
+#define CIP_CMD_READ_FRAG               ((uint8_t)0x52)
+#define CIP_CMD_WRITE_FRAG              ((uint8_t)0x53)
+#define CIP_CMD_FORWARD_OPEN            ((uint8_t)0x54)
+#define CIP_CMD_FORWARD_OPEN_EX         ((uint8_t)0x5B)
 
-extern slice_s handle_register_session(context_s *context, eip_packet_s req);
+#define CIP_CMD_OK                      ((uint8_t)0x80)
+
+
+/* CIP status, only important ones. */
+#define CIP_STATUS_OK                   ((uint8_t)0)
+#define CIP_STATUS_FRAG                 ((uint8_t)0x06)
+
+/* CIP name encoding constants. */
+#define CIP_SYMBOLIC_SEGMENT            ((uint8_t)0x91)
+#define CIP_NUMERIC_SEGMENT_ONE_BYTE    ((uint8_t)0x28)
+#define CIP_NUMERIC_SEGMENT_TWO_BYTES   ((uint8_t)0x29)
+#define CIP_NUMERIC_SEGMENT_FOUR_BYTES  ((uint8_t)0x2A)
+
+/* CIP IOI path encoding constants */
+#define CIP_IOI_CLASS_1B                ((uint8_t)0x20)
+#define CIP_IOI_INSTANCE_1B             ((uint8_t)0x24)
+
+/* other CIP defines */
+#define CIP_TRANSPORT_EXPLICIT          ((uint8_t)0xA3)  /* Class 3, application trigger. */
+
 
