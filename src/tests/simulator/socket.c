@@ -219,28 +219,32 @@ slice_s socket_read(int sock, slice_s in_buf)
 }
 
 
-
+/* this blocks until all the data is written or there is an error. */
 int socket_write(int sock, slice_s out_buf)
 {
     int total_bytes_written = 0;
     int rc = 0;
     slice_s tmp_out_buf = out_buf;
 
+    info("socket_write(): writing packet:");
+    slice_dump(out_buf);
+
     do {
         rc = (int)send(sock, (char *)tmp_out_buf.data, (size_t)tmp_out_buf.len, 0);
 
         /* was there an error? */
         if(rc < 0) {
+            /*
+             * check the return value.  If it is an interrupted system call
+             * or would block, just keep looping.
+             */
 #ifdef WIN32
             rc = WSAGetLastError();
-            if(rc == WSAEWOULDBLOCK) {
+            if(rc != WSAEWOULDBLOCK) {
 #else
             rc = errno;
-            if(rc == EAGAIN || rc == EWOULDBLOCK) {
+            if(rc != EAGAIN && rc != EWOULDBLOCK) {
 #endif
-                /* just keep looping. */
-                rc = 0;
-            } else {
                 printf("Socket write error rc=%d.\n", rc);
                 return PLCTAG_ERR_WRITE;
             }
@@ -250,6 +254,6 @@ int socket_write(int sock, slice_s out_buf)
         }
     } while(total_bytes_written < out_buf.len);
 
-    return rc;
+    return PLCTAG_STATUS_OK;
 }
 

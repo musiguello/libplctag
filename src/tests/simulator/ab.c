@@ -32,16 +32,13 @@
 
 #include <tests/simulator/ab.h>
 #include <tests/simulator/eip.h>
-#include <tests/simulator/register_session.h>
-#include <tests/simulator/socket.h>
 #include <tests/simulator/utils.h>
-
 
 #define BUF_SIZE (4200)
 
 static void SIGINT_handler(int not_used);
 static void setup_sigint_handler(void);
-
+static void setup_tags(context_s *context, int num_tags, char **tag_data);
 
 volatile sig_atomic_t sigint_received = 0;
 
@@ -54,9 +51,6 @@ int main(int argc, char **argv)
 
     info("Simulator starting up.");
 
-    (void)argc;
-    (void)argv;
-
     /* set up a signal handler for ^C */
     setup_sigint_handler();
 
@@ -65,6 +59,8 @@ int main(int argc, char **argv)
 
     /* seed the random implementation. */
     srand((unsigned int)util_time_ms());
+
+    /* set up the tags. */
 
     /* start up socket */
     listen_socket = socket_open("0.0.0.0", "44818");
@@ -88,20 +84,25 @@ int main(int argc, char **argv)
             error("ERROR: accept() call failed: %s\n", gai_strerror(context.client_sock));
         }
 
-        request = read_eip_packet(context.client_sock, context.buffer);
-        if(slice_err(request) != PLCTAG_STATUS_OK) {
-            error("Something went wrong when reading the client socket!  Error = %s.", plc_tag_decode_error(slice_err(request)));
-        }
+        context.done = 0;
 
-        /* dispatch the packet as best we can. */
-        response = dispatch_eip_packet(&context, request);
-        if(slice_err(response)) {
-            error("Unable to dispatch packet! Error = %s.", plc_tag_decode_error(slice_err(response)));
-        }
+        /* process the client's packets until we are told to be done. */
+        while(!context.done) {
+            request = read_eip_packet(context.client_sock, context.buffer);
+            if(slice_err(request) != PLCTAG_STATUS_OK) {
+                error("main: Something went wrong when reading the client socket!  Error = %s.", plc_tag_decode_error(slice_err(request)));
+            }
 
-        rc = socket_write(context.client_sock, response);
-        if(rc != PLCTAG_STATUS_OK) {
-            error("Unable to write response!  Error = %s.", plc_tag_decode_error(rc));
+            /* dispatch the packet as best we can. */
+            response = dispatch_eip_packet(&context, request);
+            if(slice_err(response)) {
+                error("main: Unable to dispatch packet! Error = %s.", plc_tag_decode_error(slice_err(response)));
+            }
+
+            rc = socket_write(context.client_sock, response);
+            if(rc != PLCTAG_STATUS_OK) {
+                error("main: Unable to write response!  Error = %s (%d).", plc_tag_decode_error(rc), rc);
+            }
         }
     }
 
@@ -129,3 +130,27 @@ void setup_sigint_handler(void)
 }
 
 
+
+void setup_tags(context_s *context, int num_tags, char **tag_strings)
+{
+    if(num_tags <= 0) {
+        info("You must provide tag definitions on the command line!");
+        usage();
+    }
+
+    context->tags = calloc(sizeof(tag_s*), num_tags);
+    if(!context->tags) {
+        error("Unable to allocate memory for tag pointer array!");
+    }
+
+    for(int i=0; i < num_tags; i++) {
+        setup_single_tag(&context->tags[i], tag_strings[i]);
+    }
+}
+
+/* tag format: "name:<type>[array dims]" */
+void setup_single_tag(tag_s **tag_ptr, const char *tag_string)
+{
+
+
+}

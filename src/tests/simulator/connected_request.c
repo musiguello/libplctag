@@ -22,32 +22,32 @@
 #include <stdlib.h>
 #include <string.h>
 #include <tests/simulator/eip.h>
-#include <tests/simulator/forward_open_request.h>
-#include <tests/simulator/unconnected_request.h>
+#include <tests/simulator/connected_request.h>
 #include <tests/simulator/utils.h>
 
 
-static int unmarshall_and_validate_unconnected_request(context_s *context, slice_s raw_cpf_packet, uc_cpf_s *cpf_packet);
+static int unmarshall_and_validate_connected_request(context_s *context, slice_s raw_cpf_packet, co_cpf_s *cpf_packet);
 static slice_s dispatch_cip_request(context_s *context, slice_s raw_cip_packet);
 
 
 
-slice_s handle_unconnected_request(context_s *context, slice_s raw_request)
+slice_s handle_connected_request(context_s *context, slice_s raw_request)
 {
     int rc = PLCTAG_STATUS_OK;
     slice_s result;
-    uc_cpf_s cpf_packet;
+    co_cpf_s cpf_packet;
 
     /* make sure that we set all the data to a known state first. */
     memset(&cpf_packet, 0, sizeof(cpf_packet));
 
-    rc = unmarshall_and_validate_unconnected_request(context, raw_request, &cpf_packet);
+    rc = unmarshall_and_validate_connected_request(context, raw_request, &cpf_packet);
     if(rc != PLCTAG_STATUS_OK) {
-        info("handle_unconnected_request() failed to validate incoming unconnected request packet with error %s!", plc_tag_decode_error(rc));
+        info("handle_connected_request() failed to validate incoming connected request packet with error %s!", plc_tag_decode_error(rc));
         result = slice_make_err(rc);
     } else {
-        slice_s raw_cip_packet = slice_remainder(raw_request, UC_CPF_HEADER_SIZE);
-        info("handle_unconnected_request() validated incoming unconnected request.  Now dispatching CIP payload.");
+        /* get the rest of the packet, but note that the connection sequence ID is not actually part of the CIP packet! */
+        slice_s raw_cip_packet = slice_remainder(raw_request, CO_CPF_HEADER_SIZE + 2);
+        info("handle_connected_request() validated incoming connected request.  Now dispatching CIP payload.");
 
         result = dispatch_cip_request(context, raw_cip_packet);
     }
@@ -60,14 +60,14 @@ slice_s handle_unconnected_request(context_s *context, slice_s raw_request)
 #define BUMP(n) do { offset += (n); } while(0);
 
 
-int unmarshall_and_validate_unconnected_request(context_s *context, slice_s raw_cpf_packet, uc_cpf_s *cpf_packet)
+int unmarshal_and_validate_connected_request(context_s *context, slice_s raw_cpf_packet, co_cpf_s *cpf_packet)
 {
     int offset = 0;
 
     (void)context;
-
-    if(raw_cpf_packet.len < UC_CPF_HEADER_SIZE) {
-        info("marshall_and_validate_unconnected_request() CPF packet must have at least %d bytes of data.", UC_CPF_HEADER_SIZE);
+;
+    if(raw_cpf_packet.len < CO_CPF_HEADER_SIZE) {
+        info("unmarshal_and_validate_connected_request() CPF packet must have at least %d bytes of data.", CO_CPF_HEADER_SIZE);
         return PLCTAG_ERR_TOO_SMALL;
     }
 
@@ -76,12 +76,12 @@ int unmarshall_and_validate_unconnected_request(context_s *context, slice_s raw_
     cpf_packet->router_timeout = get_uint16_le(raw_cpf_packet, offset); BUMP(2);
 
     if(cpf_packet->interface_handle != (uint32_t)0) {
-        info("marshall_and_validate_unconnected_request(): interface handle should be zero but was %x!", (int)cpf_packet->interface_handle);
+        info("unmarshal_and_validate_connected_request(): interface handle should be zero but was %x!", (int)cpf_packet->interface_handle);
         return PLCTAG_ERR_BAD_PARAM;
     }
 
     if(cpf_packet->router_timeout != (uint16_t)1) {
-        info("marshall_and_validate_unconnected_request(): router timeout should be 1 but was %x!", (int)cpf_packet->router_timeout);
+        info("unmarshal_and_validate_connected_request(): router timeout should be 1 but was %x!", (int)cpf_packet->router_timeout);
         return PLCTAG_ERR_BAD_PARAM;
     }
 
@@ -91,41 +91,53 @@ int unmarshall_and_validate_unconnected_request(context_s *context, slice_s raw_
     cpf_packet->item_count = get_uint16_le(raw_cpf_packet, offset); BUMP(2);
 
     if(cpf_packet->item_count != (uint16_t)2) {
-        info("marshall_and_validate_unconnected_request() we can only handle CPF requests with two items but this request has %d items!", (int)cpf_packet->item_count);
+        info("unmarshal_and_validate_connected_request() we can only handle CPF requests with two items but this request has %d items!", (int)cpf_packet->item_count);
         return PLCTAG_ERR_UNSUPPORTED;
     }
 
-    /* the unconnected address item is two 16-bit words that are zero. */
-    cpf_packet->nai_item_type = get_uint16_le(raw_cpf_packet, offset); BUMP(2);
-    cpf_packet->nai_item_length = get_uint16_le(raw_cpf_packet, offset); BUMP(2);
+    /* the connected address item is two 16-bit not zero. */
+    cpf_packet->cai_item_type = get_uint16_le(raw_cpf_packet, offset); BUMP(2);
+    cpf_packet->cai_item_length = get_uint16_le(raw_cpf_packet, offset); BUMP(2);
 
-    if(cpf_packet->nai_item_type != CPF_ITEM_NAI) {
-        info("marshall_and_validate_unconnected_request() Unconnected address type must be zero, got %x!", (int)cpf_packet->nai_item_type);
-        return PLCTAG_ERR_UNSUPPORTED;
+    if(cpf_packet->nai_item_type != CPF_ITEM_CAI) {
+        info("unmarshal_and_validate_connected_request() connected address type must be %x, got %x!", CPF_ITEM_CAI, (int)cpf_packet->cai_item_type);
+        return PLCTAG_ERR_BAD_PARAM;
     }
 
-    if(cpf_packet->nai_item_length != (uint16_t)0) {
-        info("marshall_and_validate_unconnected_request() Unconnected address length must be zero, got %x!", (int)cpf_packet->nai_item_length);
-        return PLCTAG_ERR_UNSUPPORTED;
+    if(cpf_packet->nai_item_length != (uint16_t)4) {
+        info("unmarshal_and_validate_connected_request() connected address length must be 4, got %x!", (int)cpf_packet->cai_item_length);
+        return PLCTAG_ERR_BAD_PARAM;
+    }
+
+    /* get the connection ID */
+    cpf_packet->connection_id = get_uint32_le(raw_cpf_packet, offset); BUMP(4);
+
+    if(cpf_packet->connection_id != context->server_connection_id) {
+        info("unmarshal_and_validate_connected_request(): connection ID should match %x but got %x!", context->server_connection_id, (int)cpf_packet->connection_id);
+        return PLCTAG_ERR_BAD_PARAM;
     }
 
     /* Now get the data items.   This is a type and a length. */
-    cpf_packet->udi_item_type = get_uint16_le(raw_cpf_packet, offset); BUMP(2);
-    cpf_packet->udi_item_length = get_uint16_le(raw_cpf_packet, offset); BUMP(2);
+    cpf_packet->cdi_item_type = get_uint16_le(raw_cpf_packet, offset); BUMP(2);
+    cpf_packet->cdi_item_length = get_uint16_le(raw_cpf_packet, offset); BUMP(2);
 
-    if(cpf_packet->udi_item_type != CPF_ITEM_UDI) {
-        info("marshall_and_validate_unconnected_request() Unconnected data type expected, got %x!", (int)cpf_packet->udi_item_type);
+    if(cpf_packet->cdi_item_type != CPF_ITEM_CDI) {
+        info("unmarshal_and_validate_connected_request() connected data type, %x, expected, got %x!", CPF_ITEM_CDI, (int)cpf_packet->udi_item_type);
         return PLCTAG_ERR_UNSUPPORTED;
     }
 
-    if(cpf_packet->udi_item_length <= (uint16_t)0) {
-        info("marshall_and_validate_unconnected_request() Unconnected data length must be greater than zero, got %d!", (int)cpf_packet->udi_item_length);
+    if(cpf_packet->cdi_item_length <= (uint16_t)0) {
+        info("unmarshal_and_validate_connected_request() connected data length must be greater than zero, got %d!", (int)cpf_packet->cdi_item_length);
         return PLCTAG_ERR_UNSUPPORTED;
     }
+
+    /* get the connection sequence .  */
+    cpf_packet->connection_seq = get_uint16_le(raw_cpf_packet, offset); BUMP(2);
+    context->client_connection_seq = cpf_packet->connection_seq;
 
     /* double check the payload length against the actual length. */
-    if(cpf_packet->udi_item_length != (raw_cpf_packet.len - UC_CPF_HEADER_SIZE)) {
-        info("marshall_and_validate_unconnected_request() CIP packet length must be %d, got %d!", (int)(raw_cpf_packet.len - UC_CPF_HEADER_SIZE), (int)cpf_packet->udi_item_length);
+    if(cpf_packet->cdi_item_length != (raw_cpf_packet.len - UC_CPF_HEADER_SIZE)) {
+        info("unmarshal_and_validate_connected_request() CIP packet length must be %d, got %d!", (int)(raw_cpf_packet.len - UC_CPF_HEADER_SIZE), (int)cpf_packet->udi_item_length);
 
         if(cpf_packet->udi_item_length < (raw_cpf_packet.len - UC_CPF_HEADER_SIZE)) {
             return PLCTAG_ERR_TOO_SMALL;
@@ -148,10 +160,10 @@ slice_s dispatch_cip_request(context_s *context, slice_s raw_cip_packet)
     cip_command = slice_at(raw_cip_packet, 0);
 
     switch(cip_command) {
-        case CIP_CMD_FORWARD_OPEN:
+        case CIP_CMD_READ:
             /* fall through */
-        case CIP_CMD_FORWARD_OPEN_EX:
-            result = handle_forward_open_request(context, raw_cip_packet);
+        case CIP_CMD_READ_FRAG:
+            result = handle_read_request(context, raw_cip_packet);
             break;
 
         default:

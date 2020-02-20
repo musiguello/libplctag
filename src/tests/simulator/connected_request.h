@@ -20,37 +20,32 @@
 
 #pragma once
 
-/* CIP commands. */
-#define CIP_CMD_RESPONSE                ((uint8_t)0x80)
-#define CIP_CMD_PCCC_EXECUTE            ((uint8_t)0x4B)
-#define CIP_CMD_READ                    ((uint8_t)0x4C)
-#define CIP_CMD_WRITE                   ((uint8_t)0x4D)
-#define CIP_CMD_FORWARD_CLOSE           ((uint8_t)0x4E)
-#define CIP_CMD_READ_FRAG               ((uint8_t)0x52)
-#define CIP_CMD_WRITE_FRAG              ((uint8_t)0x53)
-#define CIP_CMD_FORWARD_OPEN            ((uint8_t)0x54)
-#define CIP_CMD_FORWARD_OPEN_EX         ((uint8_t)0x5B)
+#include <tests/simulator/ab.h>
+#include <tests/simulator/slice.h>
 
-#define CIP_CMD_OK                      ((uint8_t)0x80)
+/* standard CPF connected message with two items. */
+typedef struct {
+    /* seems to be a prefix on each CPF header. */
+    uint32_t interface_handle;      /* ALWAYS 0 */
+    uint16_t router_timeout;        /* in seconds */
+
+    /* the CPF body */
+    uint16_t item_count;
+    uint16_t cai_item_type;
+    uint16_t cai_item_length;
+    uint32_t connection_id;
+    uint16_t cdi_item_type;
+    uint16_t cdi_item_length;
+    uint16_t connection_seq;
+    slice_s payload;
+} co_cpf_s;
+
+#define CO_CPF_HEADER_SIZE (20) /* does not include the connection sequence! */
+
+#define CPF_ITEM_CAI ((uint16_t)0x00A1) /* connected address item */
+#define CPF_ITEM_CDI ((uint16_t)0x00B1) /* connected data item */
 
 
-/* CIP status, only important ones. */
-#define CIP_STATUS_OK                   ((uint8_t)0)
-#define CIP_STATUS_FRAG                 ((uint8_t)0x06)
-
-/* CIP name encoding constants. */
-#define CIP_SYMBOLIC_SEGMENT            ((uint8_t)0x91)
-#define CIP_NUMERIC_SEGMENT_ONE_BYTE    ((uint8_t)0x28)
-#define CIP_NUMERIC_SEGMENT_TWO_BYTES   ((uint8_t)0x29)
-#define CIP_NUMERIC_SEGMENT_FOUR_BYTES  ((uint8_t)0x2A)
-
-/* CIP IOI path encoding constants */
-#define CIP_IOI_CLASS_1B                ((uint8_t)0x20)
-#define CIP_IOI_INSTANCE_1B             ((uint8_t)0x24)
-
-/* other CIP defines */
-#define CIP_TRANSPORT_EXPLICIT          ((uint8_t)0xA3)  /* Class 3, application trigger. */
-
-#define CIP_MAX_REQ                     (544)
-#define CIP_MAX_REQ_EX                  (4002)
+extern slice_s handle_connected_request(context_s *context, slice_s raw_request);
+extern slice_s marshall_connected_response(context_s *context, slice_s output_buf, uc_cpf_s *uc_resp);
 

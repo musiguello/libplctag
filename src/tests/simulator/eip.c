@@ -38,7 +38,7 @@ slice_s read_eip_packet(int sock, slice_s input_buf)
 
     /* get at least 24 bytes. */
     do {
-        tmp_in_buf = socket_read(sock, tmp_in_buf);
+        tmp_in_buf = socket_read(sock, slice_trunc(tmp_in_buf, bytes_left_to_read));
 
         if(slice_err(tmp_in_buf)) {
             info("ERROR: Unable to read socket: %s.", plc_tag_decode_error(slice_err(tmp_in_buf)));
@@ -147,7 +147,13 @@ int unmarshal_and_validate_eip_request(context_s *context, slice_s raw_eip_reque
     /* separate out the payload. */
     eip_packet->payload = slice_remainder(raw_eip_request, EIP_HEADER_SIZE);
 
-    /* packet length other than the header must be 4 bytes. */
+    info("unmarshal_and_validate_eip_request(): EIP packet type %x received with length %d and payload length of %d  (actual %d).",
+            eip_packet->command,
+            raw_eip_request.len,
+            eip_packet->length,
+            eip_packet->payload.len);
+
+    /* packet length other than the header must match the length parameter. */
     if(eip_packet->length != eip_packet->payload.len) {
         info("EIP request has length parameter %d, does not match actual payload length of %d!", (int)eip_packet->length, (int)eip_packet->payload.len);
         return PLCTAG_ERR_BAD_PARAM;
@@ -172,18 +178,12 @@ int unmarshal_and_validate_eip_request(context_s *context, slice_s raw_eip_reque
         return PLCTAG_ERR_BAD_PARAM;
     }
 
-    if(eip_packet->command == EIP_REGISTER_SESSION && eip_packet->sender_context != 0U) {
-        /* If this is a register session request then the packet sender context must be zero. */
-        info("Register session request session context must be zero!");
-        return PLCTAG_ERR_BAD_PARAM;
-    } else if(eip_packet->command == EIP_CONNECTED_DATA && eip_packet->sender_context != 0U) {
-        /* If this is a connected data request then the packet sender context must be zero. */
-        info("Connected data request session context must be zero!");
-        return PLCTAG_ERR_BAD_PARAM;
-    } else if(eip_packet->sender_context == (uint64_t)0) {
-        /* If this is an unconnected data request then the packet sender context must be zero. */
-        info("Unconnected data request session context must not be zero!");
-        return PLCTAG_ERR_BAD_PARAM;
+    /* the sender context should be zero in some circumstances */
+    if(eip_packet->sender_context != (uint64_t)0) {
+        if(eip_packet->command == EIP_REGISTER_SESSION || eip_packet->command == EIP_CONNECTED_DATA) {
+            info("Session context must be zero!");
+            return PLCTAG_ERR_BAD_PARAM;
+        }
     }
 
     /* packet options must be zero. */
@@ -191,6 +191,9 @@ int unmarshal_and_validate_eip_request(context_s *context, slice_s raw_eip_reque
         info("EIP request header options must be zero but was %d!", (int)eip_packet->options);
         return PLCTAG_ERR_BAD_PARAM;
     }
+
+    /* save some data for later. */
+    context->client_session_context = eip_packet->sender_context;
 
     return PLCTAG_STATUS_OK;
 }
