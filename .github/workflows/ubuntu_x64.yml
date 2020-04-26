@@ -46,9 +46,3 @@ jobs:
       with:
         name: libplctag_ubuntu_x64_lib_2.1.4.zip
         path: build
-        name: libplctag_ubuntu_x64_dev_2.1.4.zip
-        path: build
-        name: libplctag_ubuntu_x64_tools_2.1.4.zip
-        path: build
-        name: libplctag_ubuntu_x64_all_2.1.4.zip
-        path: build
