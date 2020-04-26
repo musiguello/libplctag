@@ -29,39 +29,42 @@ jobs:
     - name: Test
       run: echo "no-op for now"
 
+    - name: Make artifact directory
+      run: mkdir -p artifacts
+
     - name: Package library files
-      run: cd build/bin_dist; zip ../libplctag_ubuntu_x64_lib_2.1.4.zip libplctag.so* libplctag.a
+      run: cd build/bin_dist; rm -rf artifacts/libplctag_ubuntu_x64_lib_2.1.4.zip; zip artifacts/libplctag_ubuntu_x64_lib_2.1.4.zip libplctag.so* libplctag.a
 
     - name: Package development files
-      run: cd build/bin_dist; zip ../libplctag_ubuntu_x64_dev_2.1.4.zip libplctag.h libplctag.pc
+      run: cd build/bin_dist; rm -rf artifacts/libplctag_ubuntu_x64_dev_2.1.4.zip; zip artifacts/libplctag_ubuntu_x64_dev_2.1.4.zip libplctag.h libplctag.pc
 
     - name: Package tools
-      run: cd build/bin_dist; zip ../libplctag_ubuntu_x64_tools_2.1.4.zip list_tags tag_rw
+      run: cd build/bin_dist; rm -rf artifacts/libplctag_ubuntu_x64_tools_2.1.4.zip; zip artifacts/libplctag_ubuntu_x64_tools_2.1.4.zip list_tags tag_rw
 
     - name: Package all
-      run: cd build/bin_dist; zip ../libplctag_ubuntu_x64_all_2.1.4.zip *
+      run: cd build/bin_dist; rm -rf artifacts/libplctag_ubuntu_x64_all_2.1.4.zip; zip artifacts/libplctag_ubuntu_x64_all_2.1.4.zip *
 
     - name: Upload library ZIP artifact
       uses: actions/upload-artifact@v1
       with:
         name: libplctag_ubuntu_x64_lib_2.1.4.zip
-        path: build
+        path: artifacts
 
     - name: Upload development ZIP artifact
       uses: actions/upload-artifact@v1
       with:
         name: libplctag_ubuntu_x64_dev_2.1.4.zip
-        path: build
+        path: artifacts
 
     - name: Upload tools ZIP artifact
       uses: actions/upload-artifact@v1
       with:
         name: libplctag_ubuntu_x64_tools_2.1.4.zip
-        path: build
+        path: artifacts
 
     - name: Upload everything ZIP artifact
       uses: actions/upload-artifact@v1
       with:
         name: libplctag_ubuntu_x64_all_2.1.4.zip
-        path: build
+        path: artifacts
 
