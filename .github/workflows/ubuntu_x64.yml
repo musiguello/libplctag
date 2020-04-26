@@ -1,4 +1,4 @@
-name: Ubuntu CI
+name: "Ubuntu CI"
 
 on:
   push:
@@ -10,9 +10,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
-    env:
-        lib_version: "2.1.4"
 
     steps:
     - uses: actions/checkout@v2
@@ -31,10 +28,10 @@ jobs:
     - name: Move to binary directory.
       run: cd bin_dist
     - name: Package library files
-      run: zip ../libplctag_ubuntu_x64_lib_${{env.lib_version}}.zip libplctag.so*
+      run: zip ../libplctag_ubuntu_x64_lib_2.1.4.zip libplctag.so*
     - name: Package development files
-      run: zip ../libplctag_ubuntu_x64_dev_${{env.lib_version}}.zip libplctag.h libplctag.pc
+      run: zip ../libplctag_ubuntu_x64_dev_2.1.4.zip libplctag.h libplctag.pc
     - name: Package tools
-      run: zip ../libplctag_ubuntu_x64_tools_${{env.lib_version}}.zip list_tags tag_rw
+      run: zip ../libplctag_ubuntu_x64_tools_2.1.4.zip list_tags tag_rw
     - name: Package all
-      run: zip ../libplctag_ubuntu_x64_all_${{env.lib_version}}.zip *
+      run: zip ../libplctag_ubuntu_x64_all_2.1.4.zip *
