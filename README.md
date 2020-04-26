@@ -1,17 +1,17 @@
 |   OS   | Version | 64-bit | 32-bit |
 |   --:  |   :-:   |   :-:  |   :-:  |
-|Ubuntu  |  18.04  | [![Build Status](https://dev.azure.com/kylehayes0607/libplctag/_apis/build/status/kyle-github.libplctag%20Ubuntu%20x64?branchName=master)](https://dev.azure.com/kylehayes0607/libplctag/_build/latest?definitionId=8&branchName=master) | [![Build Status](https://dev.azure.com/kylehayes0607/libplctag/_apis/build/status/kyle-github.libplctag%20Ubuntu%20x86?branchName=master)](https://dev.azure.com/kylehayes0607/libplctag/_build/latest?definitionId=9&branchName=master) |
-|Windows |  1909   | [![Build Status](https://dev.azure.com/kylehayes0607/libplctag/_apis/build/status/kyle-github.libplctag%20Windows%20x64?branchName=master)](https://dev.azure.com/kylehayes0607/libplctag/_build/latest?definitionId=6&branchName=master) | [![Build Status](https://dev.azure.com/kylehayes0607/libplctag/_apis/build/status/kyle-github.libplctag%20Windows%20x86?branchName=master)](https://dev.azure.com/kylehayes0607/libplctag/_build/latest?definitionId=7&branchName=master) |
-|macOS   |  10.14  | [![Build Status](https://dev.azure.com/kylehayes0607/libplctag/_apis/build/status/kyle-github.libplctag%20macOS?branchName=master)](https://dev.azure.com/kylehayes0607/libplctag/_build/latest?definitionId=5&branchName=master) | Not Supported |
+|Ubuntu  |  18.04  | ![Ubuntu x64 CI](https://github.com/kyle-github/libplctag/workflows/Ubuntu%20x64%20CI/badge.svg) | ![Ubuntu x86 CI](https://github.com/kyle-github/libplctag/workflows/Ubuntu%20x86%20CI/badge.svg) |
+|Windows |  10 (Server 19) | ![Windows x64 CI](https://github.com/kyle-github/libplctag/workflows/Windows%20x64%20CI/badge.svg) | ![Windows x86 CI](https://github.com/kyle-github/libplctag/workflows/Windows%20x86%20CI/badge.svg) |
+|macOS   |  10.15  | ![macOS x64 CI](https://github.com/kyle-github/libplctag/workflows/macOS%20x64%20CI/badge.svg) | Not Supported |
 
 
 libplctag
 =========
 
-This library for Linux and Windows provides a means of accessing PLCs to read and write
+This library for Linux, Windows and macOS provides a means of accessing PLCs to read and write
 simple data.
 
-Stable Version: 2.0
+Stable Version: 2.1
 
 Old Stable Version: 1.5
 
@@ -94,10 +94,10 @@ Take a look at the [test page](https://github.com/kyle-github/libplctag/wiki/PLC
 
 The library has been in production use since 2012 and is in use by multiple organizations including some very large ones.
 
-We are on API version 2.0.  That includes:
+We are on API version 2.1.  That includes:
 
 * CMake build system for better cross-platform support.
-* Binary releases built for Ubuntu 18.04, macOS 10.14 and Windows 10.  All 64-bit.
+* Binary releases built for Ubuntu 18.04, macOS 10.15 and Windows 10.  All 64-bit, with 32-bit binary releases for Windows and Ubuntu.
 * support for Rockwell/Allen-Bradley ControlLogix(tm) PLCs via CIP-EtherNet/IP (CIP/EIP or EIP)(tm?).   Firmware versions 16, 20 and 31.
   * read/write 8, 16, 32, and 64-bit signed and unsigned integers.
   * read/write single booleans under some circumstances (BOOL arrays are still tricky).
@@ -127,7 +127,7 @@ We are on API version 2.0.  That includes:
   * we do not use Windows for our deployments.
   * only the tag_rw example program has been tested (though that tests most of the API).
 * sample code.
-* a stable API.  The release of 2.0 is the first breaking change in over four years.
+* a stable API.  The release of 2.0 was the first breaking change in over four years.
   * stable C API with wrappers in Python and Java.
   * user-contributed/user-supported wrappers for C# and Pascal.
 * support for request bundling on supporting PLCs (ControlLogix and CompactLogix).  This is automatic within the library.
@@ -206,7 +206,12 @@ to start out with the synchronous versions of the API and move to the asynchrono
 you understand it better and need the performance.
 
 ```c
+    void plc_tag_set_debug_level(int debug_level);
+    int plc_tag_check_lib_version(int req_major, int req_minor, int req_patch);
     int32_t plc_tag_create(const char *attrib_str, int timeout);
+    void plc_tag_shutdown(void);
+    int plc_tag_register_callback(int32_t tag_id, void (*tag_callback_func)(int32_t tag_id, int event, int status));
+    int plc_tag_unregister_callback(int32_t tag_id);
     int plc_tag_lock(int32_t tag_id);
     int plc_tag_unlock(int32_t tag_d);
     int plc_tag_abort(int32_t tag_id);
@@ -223,7 +228,10 @@ local data.  Note that after you set something, you must
 still call plc_tag_write(tag) to push it to the PLC.
 
 ```c
-    /* version 2.0 */
+    /* version 2.1 */
+    int plc_tag_get_int_attribute(int32_t tag, const char *attrib_name, int default_value);
+    int plc_tag_set_int_attribute(int32_t tag, const char *attrib_name, int new_value);
+
     uint64_t plc_tag_get_uint64(int32_t tag_id, int offset);
     int plc_tag_set_uint64(int32_t tag_id, int offset, uint64_t val);
 
@@ -278,14 +286,16 @@ the values of each one and writes them back.
 
 ```c
 #include <stdio.h>
+#include <stdlib.h>
 #include "../lib/libplctag.h"
 #include "utils.h"
 
+#define REQUIRED_VERSION 2,1,0
 
 #define TAG_PATH "protocol=ab-eip&gateway=192.168.56.121&path=1,5&cpu=LGX&elem_size=4&elem_count=200&name=TestBigArray&debug=4"
 #define ELEM_COUNT 200
 #define ELEM_SIZE 4
-#define DATA_TIMEOUT 5000 /* 5000 milliseconds */
+#define DATA_TIMEOUT 5000
 
 
 int main()
@@ -293,6 +303,12 @@ int main()
     int32_t tag = 0;
     int rc;
     int i;
+
+    /* check the library version. */
+    if(plc_tag_check_lib_version(REQUIRED_VERSION) != PLCTAG_STATUS_OK) {
+        fprintf(stderr, "Required compatible library version %d.%d.%d not available!", REQUIRED_VERSION);
+        exit(1);
+    }
 
     /* create the tag */
     tag = plc_tag_create(TAG_PATH, DATA_TIMEOUT);
@@ -319,12 +335,12 @@ int main()
 
     /* print out the data */
     for(i=0; i < ELEM_COUNT; i++) {
-        fprintf(stderr,"data[%d]=%d\n", i, plc_tag_get_int32(tag, (i*ELEM_SIZE)));
+        fprintf(stderr,"data[%d]=%d\n",i,plc_tag_get_int32(tag,(i*ELEM_SIZE)));
     }
 
-    /* now test a write, increment each element by one. */
+    /* now test a write */
     for(i=0; i < ELEM_COUNT; i++) {
-        int32_t val = plc_tag_get_int32(tag, (i*ELEM_SIZE));
+        int32_t val = plc_tag_get_int32(tag,(i*ELEM_SIZE));
 
         val = val+1;
 
