@@ -20,14 +20,11 @@ jobs:
     - name: Create build directory
       run: mkdir build
 
-    - name: Enter build directory
-      run: cd build
-
     - name: Configure CMake
-      run: cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_32_BIT=0 ..
+      run: cd build; cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_32_BIT=0 ..
 
     - name: Build
-      run: cmake --build .
+      run: cd build; cmake --build .
 
     - name: Test
       run: echo "no-op for now"
