@@ -44,11 +44,11 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
       with:
-        name: libplctag_ubuntu_x64_lib_2.1.4.zip
+        name: [ libplctag_ubuntu_x64_lib_2.1.4.zip, libplctag_ubuntu_x64_dev_2.1.4.zip, libplctag_ubuntu_x64_tools_2.1.4.zip, libplctag_ubuntu_x64_all_2.1.4.zip ]
         path: build
-        name: libplctag_ubuntu_x64_dev_${{lib_version}}.zip
+        name:
         path: build
-        name: libplctag_ubuntu_x64_tools_${{lib_version}}.zip
+        name:
         path: build
-        name: libplctag_ubuntu_x64_all_${{lib_version}}.zip
+        name:
         path: build
