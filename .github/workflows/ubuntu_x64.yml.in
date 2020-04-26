@@ -1,4 +1,4 @@
-name: "Ubuntu CI"
+name: "Ubuntu x64 CI"
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  build_x64:
 
     runs-on: ubuntu-latest
 
