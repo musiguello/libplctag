@@ -1,4 +1,4 @@
-name: Ubuntu x64 CI
+name: Ubuntu x86 CI
 
 on:
   push:
@@ -7,13 +7,13 @@ on:
     branches: [ master ]
 
 jobs:
-  build_x64:
+  build_x86:
 
     runs-on: ubuntu-latest
 
     env:
-      VERSION: "@VERSION@"
-      ARTIFACT: "libplctag_@VERSION@_ubuntu_x64.zip"
+      VERSION: "2.1.4"
+      ARTIFACT: "libplctag_2.1.4_ubuntu_x64.zip"
       BUILD: "${{ github.workspace }}/build"
       DIST: "${{ github.workspace }}/build/bin_dist"
 
@@ -27,7 +27,7 @@ jobs:
       run: rm -rf ${{ env.BUILD }}; mkdir -p ${{ env.BUILD }}
 
     - name: Configure CMake
-      run: cd ${{ env.BUILD }}; cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_32_BIT=0 ..
+      run: cd ${{ env.BUILD }}; cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_32_BIT=1 ..
 
     - name: Build
       run: cd ${{ env.BUILD }}; cmake --build .
@@ -40,3 +40,4 @@ jobs:
       with:
         name: ${{ env.ARTIFACT }}
         path: ${{ env.DIST }}
+
