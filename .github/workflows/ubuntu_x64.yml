@@ -11,6 +11,12 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      VERSION: "2.1.4"
+      ARTIFACT: "libplctag_2.1.4_ubuntu_x64.zip"
+      BUILD: "${{ github.workspace }}/build"
+      DIST: "${{ github.workspace }}/build/bin_dist"
+
     steps:
     - uses: actions/checkout@v2
 
@@ -18,53 +24,20 @@ jobs:
       run: sudo apt install build-essential cmake
 
     - name: Create build directory
-      run: mkdir build
+      run: mkdir ${{ env.BUILD }}
 
     - name: Configure CMake
-      run: cd build; cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_32_BIT=0 ..
+      run: cd ${{ env.BUILD }}; cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_32_BIT=0 ..
 
     - name: Build
-      run: cd build; cmake --build .
+      run: cd ${{ env.BUILD }}; cmake --build .
 
     - name: Test
       run: echo "no-op for now"
 
-    - name: Make artifact directory
-      run: mkdir -p ${{ github.workspace }}/artifacts; ls -l ${{ github.workspace }}
-
-    - name: Copy library files
-      run: mkdir -p ${{ github.workspace }}/artifacts/lib; cd ${{ github.workspace }}/build/bin_dist; cp libplctag.so* libplctag.a ${{ github.workspace }}/artifacts/lib/
-
-    - name: Copy dev files
-      run: mkdir -p ${{ github.workspace }}/artifacts/dev; cd ${{ github.workspace }}/build/bin_dist; cp libplctag.h libplctag.pc ${{ github.workspace }}/artifacts/dev/
-
-    - name: Copy tools files
-      run: mkdir -p ${{ github.workspace }}/artifacts/tools; cd ${{ github.workspace }}/build/bin_dist; cp list_tags tag_rw ${{ github.workspace }}/artifacts/tools/
-
-    - name: Copy all files
-      run: mkdir -p ${{ github.workspace }}/artifacts/all; cd ${{ github.workspace }}/build/bin_dist; cp * ${{ github.workspace }}/artifacts/all/
-
-    - name: Upload library ZIP artifact
+    - name: Upload ZIP artifact
       uses: actions/upload-artifact@v1
       with:
-        name: libplctag_ubuntu_x64_lib_2.1.4.zip
-        path: ${{ github.workspace }}/artifacts/lib/
-
-    - name: Upload development ZIP artifact
-      uses: actions/upload-artifact@v1
-      with:
-        name: libplctag_ubuntu_x64_dev_2.1.4.zip
-        path: ${{ github.workspace }}/artifacts/dev/
-
-    - name: Upload tools ZIP artifact
-      uses: actions/upload-artifact@v1
-      with:
-        name: libplctag_ubuntu_x64_tools_2.1.4.zip
-        path: ${{ github.workspace }}/artifacts/tools/
-
-    - name: Upload everything ZIP artifact
-      uses: actions/upload-artifact@v1
-      with:
-        name: libplctag_ubuntu_x64_all_2.1.4.zip
-        path: ${{ github.workspace }}/artifacts/all/
+        name: ${{ env.ARTIFACT }}
+        path: ${{ env.DIST }}
 
