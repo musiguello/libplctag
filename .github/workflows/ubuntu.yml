@@ -26,17 +26,21 @@ jobs:
       run: echo "no-op for now"
     - name: Package library binaries.
       run: cd bin_dist
-      run: zip ubuntu_x64_${{lib_version}}_lib.zip libplctag.so*
+      run: zip ../libplctag_ubuntu_x64_lib_${{lib_version}}.zip libplctag.so*
     - name: Package development files
-      run: zip ubuntu_x64_${{lib_version}}_dev.zip libplctag.h libplctag.pc
+      run: zip ../libplctag_ubuntu_x64_dev_${{lib_version}}.zip libplctag.h libplctag.pc
     - name: Package tools
-      run: zip ubuntu_x64_${{lib_version}}_tools.zip list_tags tag_rw
+      run: zip ../libplctag_ubuntu_x64_tools${{lib_version}}.zip list_tags tag_rw
+    - name: Package all
+      run: zip ../libplctag_ubuntu_x64_all${{lib_version}}.zip *
     - name: Upload artifacts
     - uses: actions/upload-artifact@v1
       with:
-        name: ubuntu_x64_${{lib_version}}_lib.zip
-        path: build/bin_dist
-        name: ubuntu_x64_${{lib_version}}_dev.zip
-        path: build/bin_dist
-        name: ubuntu_x64_${{lib_version}}_tools.zip
-        path: build/bin_dist
+        name: libplctag_ubuntu_x64_lib_${{lib_version}}.zip
+        path: build
+        name: libplctag_ubuntu_x64_dev_${{lib_version}}.zip
+        path: build
+        name: libplctag_ubuntu_x64_tools_${{lib_version}}.zip
+        path: build
+        name: libplctag_ubuntu_x64_all_${{lib_version}}.zip
+        path: build
