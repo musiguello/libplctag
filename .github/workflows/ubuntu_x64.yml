@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-        lib_version: "@VERSION@"
+        lib_version: "2.1.4"
 
     steps:
     - uses: actions/checkout@v2
