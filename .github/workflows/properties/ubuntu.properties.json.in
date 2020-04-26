@@ -1,5 +1,0 @@
-{
-    "name": "libplctag_ubuntu_x64",
-    "description": "Build libplctag on Ubuntu x64",
-    "lib_version": "@VERSION@"
-}

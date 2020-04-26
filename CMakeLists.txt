@@ -371,7 +371,7 @@ endif()
 
 # Generate files from templates
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/libplctag.pc.in" "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libplctag.pc" @ONLY)
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/.github/workflows/properties/ubuntu.properties.json.in" "${CMAKE_CURRENT_SOURCE_DIR}/.github/workflows/properties/ubuntu.properties.json" @ONLY)
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/.github/workflows/ubuntu_x64.yml.in" "${CMAKE_CURRENT_SOURCE_DIR}/.github/workflows/ubuntu_x64.yml" @ONLY)
 
 # for installation
 if(UNIX)
