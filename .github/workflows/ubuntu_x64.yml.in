@@ -42,7 +42,7 @@ jobs:
       run: cd build/bin_dist; zip ../libplctag_ubuntu_x64_all_@VERSION@.zip *
 
     - name: Upload artifacts
-    - uses: actions/upload-artifact@v1
-      with:
-        name: libplctag_ubuntu_x64_lib_@VERSION@.zip
-        path: build
+      uses: actions/upload-artifact@v1
+        with:
+          name: libplctag_ubuntu_x64_lib_@VERSION@.zip
+          path: build
