@@ -33,16 +33,16 @@ jobs:
       run: mkdir -p artifacts
 
     - name: Package library files
-      run: cd build/bin_dist; rm -rf artifacts/libplctag_ubuntu_x64_lib_@VERSION@.zip; zip artifacts/libplctag_ubuntu_x64_lib_@VERSION@.zip libplctag.so* libplctag.a
+      run: cd build/bin_dist; zip artifacts/libplctag_ubuntu_x64_lib_@VERSION@.zip libplctag.so* libplctag.a
 
     - name: Package development files
-      run: cd build/bin_dist; rm -rf artifacts/libplctag_ubuntu_x64_dev_@VERSION@.zip; zip artifacts/libplctag_ubuntu_x64_dev_@VERSION@.zip libplctag.h libplctag.pc
+      run: cd build/bin_dist; zip artifacts/libplctag_ubuntu_x64_dev_@VERSION@.zip libplctag.h libplctag.pc
 
     - name: Package tools
-      run: cd build/bin_dist; rm -rf artifacts/libplctag_ubuntu_x64_tools_@VERSION@.zip; zip artifacts/libplctag_ubuntu_x64_tools_@VERSION@.zip list_tags tag_rw
+      run: cd build/bin_dist; zip artifacts/libplctag_ubuntu_x64_tools_@VERSION@.zip list_tags tag_rw
 
     - name: Package all
-      run: cd build/bin_dist; rm -rf artifacts/libplctag_ubuntu_x64_all_@VERSION@.zip; zip artifacts/libplctag_ubuntu_x64_all_@VERSION@.zip *
+      run: cd build/bin_dist; zip artifacts/libplctag_ubuntu_x64_all_@VERSION@.zip *
 
     - name: Upload library ZIP artifact
       uses: actions/upload-artifact@v1
