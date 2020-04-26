@@ -33,14 +33,3 @@ jobs:
       run: zip ../libplctag_ubuntu_x64_tools${{lib_version}}.zip list_tags tag_rw
     - name: Package all
       run: zip ../libplctag_ubuntu_x64_all${{lib_version}}.zip *
-    - name: Upload artifacts
-    - uses: actions/upload-artifact@v1
-      with:
-        name: libplctag_ubuntu_x64_lib_${{lib_version}}.zip
-        path: build
-        name: libplctag_ubuntu_x64_dev_${{lib_version}}.zip
-        path: build
-        name: libplctag_ubuntu_x64_tools_${{lib_version}}.zip
-        path: build
-        name: libplctag_ubuntu_x64_all_${{lib_version}}.zip
-        path: build
