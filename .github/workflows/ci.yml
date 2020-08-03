@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      VERSION: "2.1.11"
-      ARTIFACT: "libplctag_2.1.11_ubuntu_x64"
+      VERSION: "2.1.12"
+      ARTIFACT: "libplctag_2.1.12_ubuntu_x64"
       BUILD: "${{ github.workspace }}/build"
       DIST: "${{ github.workspace }}/build/bin_dist"
 
@@ -46,7 +46,7 @@ jobs:
         echo "shut down server."
         killall ab_server -INT &> /dev/null
 
-    - name: Test MicroLogix
+    - name: Test Micro800
       run: |
         cd ${{ env.DIST }}
         echo "start up simulator..."
@@ -54,6 +54,39 @@ jobs:
         sleep 2
         echo "test simple get/set tag."
         ${{ env.DIST }}/tag_rw -t sint32 -p 'protocol=ab_eip&gateway=127.0.0.1&cpu=micro800&elem_size=4&elem_count=1&name=TestDINTArray[0]'
+        echo "shut down server."
+        killall ab_server -INT &> /dev/null
+
+    - name: Test Omron NJ/NX
+      run: |
+        cd ${{ env.DIST }}
+        echo "start up simulator..."
+        ${{ env.DIST }}/ab_server --plc=Omron --tag=TestDINTArray:DINT[10] &
+        sleep 2
+        echo "test simple get/set tag."
+        ${{ env.DIST }}/tag_rw -t sint32 -p 'protocol=ab-eip&gateway=127.0.0.1&path=18,127.0.0.1&plc=omron-njnx&name=TestDINTArray'
+        echo "shut down server."
+        killall ab_server -INT &> /dev/null
+
+    - name: Test PLC/5
+      run: |
+        cd ${{ env.DIST }}
+        echo "start up simulator..."
+        ${{ env.DIST }}/ab_server --plc=PLC/5 --tag=N7[10] &
+        sleep 2
+        echo "test simple get/set tag."
+        ${{ env.DIST }}/tag_rw -t sint16 -p 'protocol=ab_eip&gateway=127.0.0.1&plc=plc5&elem_size=2&elem_count=10&name=N7:0'
+        echo "shut down server."
+        killall ab_server -INT &> /dev/null
+
+    - name: Test SLC 500
+      run: |
+        cd ${{ env.DIST }}
+        echo "start up simulator..."
+        ${{ env.DIST }}/ab_server --plc=SLC500 --tag=N7[10] &
+        sleep 2
+        echo "test simple get/set tag."
+        ${{ env.DIST }}/tag_rw -t sint16 -p 'protocol=ab_eip&gateway=127.0.0.1&plc=slc&elem_size=2&elem_count=10&name=N7:0'
         echo "shut down server."
         killall ab_server -INT &> /dev/null
 
@@ -68,8 +101,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      VERSION: "2.1.11"
-      ARTIFACT: "libplctag_2.1.11_ubuntu_x86"
+      VERSION: "2.1.12"
+      ARTIFACT: "libplctag_2.1.12_ubuntu_x86"
       BUILD: "${{ github.workspace }}/build"
       DIST: "${{ github.workspace }}/build/bin_dist"
 
@@ -102,7 +135,7 @@ jobs:
         echo "shut down server."
         killall ab_server -INT &> /dev/null
 
-    - name: Test MicroLogix
+    - name: Test Micro800
       run: |
         cd ${{ env.DIST }}
         echo "start up simulator..."
@@ -110,6 +143,39 @@ jobs:
         sleep 2
         echo "test simple get/set tag."
         ${{ env.DIST }}/tag_rw -t sint32 -p 'protocol=ab_eip&gateway=127.0.0.1&cpu=micro800&elem_size=4&elem_count=1&name=TestDINTArray[0]'
+        echo "shut down server."
+        killall ab_server -INT &> /dev/null
+
+    - name: Test Omron NJ/NX
+      run: |
+        cd ${{ env.DIST }}
+        echo "start up simulator..."
+        ${{ env.DIST }}/ab_server --plc=Omron --tag=TestDINTArray:DINT[10] &
+        sleep 2
+        echo "test simple get/set tag."
+        ${{ env.DIST }}/tag_rw -t sint32 -p 'protocol=ab-eip&gateway=127.0.0.1&path=18,127.0.0.1&plc=omron-njnx&name=TestDINTArray'
+        echo "shut down server."
+        killall ab_server -INT &> /dev/null
+
+    - name: Test PLC/5
+      run: |
+        cd ${{ env.DIST }}
+        echo "start up simulator..."
+        ${{ env.DIST }}/ab_server --plc=PLC/5 --tag=N7[10] &
+        sleep 2
+        echo "test simple get/set tag."
+        ${{ env.DIST }}/tag_rw -t sint16 -p 'protocol=ab_eip&gateway=127.0.0.1&plc=plc5&elem_size=2&elem_count=10&name=N7:0'
+        echo "shut down server."
+        killall ab_server -INT &> /dev/null
+
+    - name: Test SLC 500
+      run: |
+        cd ${{ env.DIST }}
+        echo "start up simulator..."
+        ${{ env.DIST }}/ab_server --plc=SLC500 --tag=N7[10] &
+        sleep 2
+        echo "test simple get/set tag."
+        ${{ env.DIST }}/tag_rw -t sint16 -p 'protocol=ab_eip&gateway=127.0.0.1&plc=slc&elem_size=2&elem_count=10&name=N7:0'
         echo "shut down server."
         killall ab_server -INT &> /dev/null
 
@@ -124,8 +190,8 @@ jobs:
     runs-on: macos-latest
 
     env:
-      VERSION: "2.1.11"
-      ARTIFACT: "libplctag_2.1.11_macos_x64"
+      VERSION: "2.1.12"
+      ARTIFACT: "libplctag_2.1.12_macos_x64"
       BUILD: "${{ github.workspace }}/build"
       DIST: "${{ github.workspace }}/build/bin_dist"
 
@@ -155,8 +221,8 @@ jobs:
     runs-on: windows-latest
 
     env:
-      VERSION: "2.1.11"
-      ARTIFACT: "libplctag_2.1.11_windows_x64"
+      VERSION: "2.1.12"
+      ARTIFACT: "libplctag_2.1.12_windows_x64"
       BUILD: "${{ github.workspace }}/build"
       DIST: "${{ github.workspace }}/build/bin_dist"
 
@@ -186,8 +252,8 @@ jobs:
     runs-on: windows-latest
 
     env:
-      VERSION: "2.1.11"
-      ARTIFACT: "libplctag_2.1.11_windows_x86"
+      VERSION: "2.1.12"
+      ARTIFACT: "libplctag_2.1.12_windows_x86"
       BUILD: "${{ github.workspace }}/build"
       DIST: "${{ github.workspace }}/build/bin_dist"
 
